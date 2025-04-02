@@ -11,12 +11,30 @@ Development Project
 - [License](#license)
 
 ## Introduction
-This project is a collaborative software development effort aimed at solving real-world problems with innovative solutions. It is designed to be user-friendly, efficient, and scalable.
+
+This project is designed to provide an interactive platform for teachers and students at Haaga-Helia. Teachers can create and manage quizzes to help students learn course-related topics in an engaging way. The application consists of two web-based dashboards: one for teachers to manage quizzes and another for students to take quizzes and review their results. By leveraging this application, teachers can enhance the learning experience, and students can gain valuable insights into their progress.
 
 ## Features
-- Feature 1: Description of the first feature.
-- Feature 2: Description of the second feature.
-- Feature 3: Description of the third feature.
+- **Teacher Dashboard**:
+    - Add, edit, and delete quizzes with details such as name, description, course code, and published status.
+    - Add multiple-choice questions to quizzes with difficulty levels (Easy, Normal, Hard).
+    - Manage answer options for questions, including marking correct answers.
+    - Categorize quizzes by adding and managing categories with names and descriptions.
+
+- **Student Dashboard**:
+    - View a list of published quizzes and take them.
+    - Receive immediate feedback on answers during quizzes.
+    - View detailed quiz results, including total answers, correct answer percentage, and per-question statistics.
+    - Write, edit, and delete reviews for quizzes and view reviews from other students.
+
+- **Interactive Learning**:
+    - Teachers can create quizzes to help students learn topics like Agile principles, databases, and more.
+    - Students can engage with quizzes to reinforce their understanding of course material.
+
+- **Web-Based Application**:
+    - Accessible via web browsers for both teachers and students, ensuring ease of use and availability.
+
+
 
 ## Installation
 To install and run the project locally, follow these steps:
@@ -53,7 +71,7 @@ We welcome contributions! Please follow these steps:
 ## Authors
 - Ayush Ghimire
 - Bidhan Adhikari
-- Nguyen Do Duc Tu
+- Tobi
 - Ahmad Jalal
 
 ## License
