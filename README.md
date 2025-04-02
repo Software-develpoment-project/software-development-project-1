@@ -53,7 +53,7 @@ We welcome contributions! Please follow these steps:
 ## Authors
 - Ayush Ghimire
 - Bidhan Adhikari
-- Tobi
+- Nguyen Do Duc Tu
 - Ahmad Jalal
 
 ## License
