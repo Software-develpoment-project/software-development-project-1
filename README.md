@@ -71,8 +71,14 @@ We welcome contributions! Please follow these steps:
 ## Authors
 - Ayush Ghimire
 - Bidhan Adhikari
-- Nguyen Do Duc Tu
+- Tobi
 - Ahmad Jalal
+
+## Github Links of Authors
+- Ayush Ghimire: https://github.com/ayushghimiresharma95
+- Bidhan Adhikari: https://github.com/Bidhan33
+- Tobi: https://github.com/tu-nguyen-do-duc
+- Ahmad Jalal: https://github.com/Jalalians99
 
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
