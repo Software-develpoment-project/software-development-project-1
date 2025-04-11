@@ -1,5 +1,5 @@
 package codefusion.softwareproject1.entity;
 
-public class demo {
+public class Questions {
 
 }

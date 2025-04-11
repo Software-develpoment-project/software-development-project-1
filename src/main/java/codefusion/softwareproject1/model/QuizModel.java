@@ -1,5 +1,5 @@
 package codefusion.softwareproject1.model;
 
-public class Quiz {
+public class QuizModel {
 
 }
