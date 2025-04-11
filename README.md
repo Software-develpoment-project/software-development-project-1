@@ -56,6 +56,7 @@ We welcome contributions! Please follow these steps:
 - Tobi
 - Ahmad Jalal
 
+<<<<<<< HEAD
 
 ## Team Members
 👨‍💻 Member 1 - Backend 
@@ -63,6 +64,13 @@ We welcome contributions! Please follow these steps:
 👨‍💻 Member 3 - API & Testing 
 👨‍💻Member 4 - Documentation & CI/CD 
 
+=======
+## Github Links of Authors
+- Ayush Ghimire: https://github.com/ayushghimiresharma95
+- Bidhan Adhikari: https://github.com/Bidhan33
+- Tobi: https://github.com/tu-nguyen-do-duc
+- Ahmad Jalal: https://github.com/Jalalians99
+>>>>>>> 0c1ef5de7e98252c35357ff9bd03bc9c6e0e221f
 
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
