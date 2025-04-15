@@ -1,4 +1,6 @@
-package codefusion.softwareproject1.entity;
+package codefusion.softwareproject1.Models;
+
+import java.util.List;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -7,7 +9,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class Teacher {
+public class TeacherClass {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,5 +19,9 @@ public class Teacher {
 
     private String email;
 
-    private String QuizID;
+    @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QuizClass> quizzes;
+
+
+    
 }
