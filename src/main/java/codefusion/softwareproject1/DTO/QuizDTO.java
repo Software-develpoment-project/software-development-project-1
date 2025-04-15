@@ -18,4 +18,5 @@ public class QuizDTO {
     private String title;
     private String description;
     private QuestionsDTO[] questions;
+    private CategoryDTO category;
 }
