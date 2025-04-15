@@ -12,6 +12,7 @@ import java.util.List;
 @Repository
 public interface QuestionsRepo extends JpaRepository<QuestionsClass, Long> {
     List<QuestionsClass> findByQuiz(QuizClass quiz);
+    List<QuestionsClass> findByQuizId(Long quizId);
     List<QuestionsClass> findByDifficultyLevel(DifficultyLevel difficultyLevel);
-    List<QuestionsClass> findByQuestionTextContaining(String keyword);
+    List<QuestionsClass> findByContentContaining(String keyword);
 } 
