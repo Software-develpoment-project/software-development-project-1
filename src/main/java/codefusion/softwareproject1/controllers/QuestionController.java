@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/quizzes")
-public class QuestionQuizController {
+public class QuestionController {
 
     @Autowired
     private QuestionRepo questionRepository;
@@ -37,3 +37,4 @@ public class QuestionQuizController {
                 })
                 .orElseThrow(() -> new RuntimeException("Quiz not found"));
     }
+}

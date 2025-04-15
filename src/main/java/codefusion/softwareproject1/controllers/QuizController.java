@@ -61,3 +61,4 @@ public class QuizController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+}
