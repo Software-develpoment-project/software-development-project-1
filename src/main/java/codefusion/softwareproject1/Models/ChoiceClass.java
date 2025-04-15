@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChoiceClass {
+public class AnswerOptions {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +23,7 @@ public class ChoiceClass {
 
     @ManyToOne
     @JoinColumn(name = "question_id", nullable = false)
-    private QuestionsClass question;
+    private Questions question;
 
 
 }
