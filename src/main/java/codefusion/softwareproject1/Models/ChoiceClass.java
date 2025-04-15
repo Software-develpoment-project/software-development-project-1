@@ -24,5 +24,9 @@ public class ChoiceClass {
     @ManyToOne
     @JoinColumn(name = "question_id", nullable = false)
     private QuestionsClass question;
+<<<<<<< HEAD
+=======
+
+>>>>>>> b4b6a66fde8ae60f6564b68efc56075bf548027a
 
 }
