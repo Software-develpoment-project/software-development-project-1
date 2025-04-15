@@ -10,5 +10,5 @@ import java.util.List;
 @Repository
 public interface CategoryRepo extends JpaRepository<CategoryClass, Long> {
     List<CategoryClass> findByName(String name);
-    List<CategoryClass> findByNameContaining(String namePattern);
+    List<CategoryClass> findByNameContainingIgnoreCase(String keyword);
 } 
