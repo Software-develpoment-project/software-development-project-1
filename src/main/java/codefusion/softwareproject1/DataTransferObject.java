@@ -1,6 +1,6 @@
 package codefusion.softwareproject1;
 
-public class DTO {
+public class DataTransferObject {
 
 }
     
