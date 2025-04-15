@@ -4,11 +4,12 @@ Development Project
 ## Table of Contents
 - [Introduction](#introduction)
 - [Features](#features)
+- [Class-Diagram](#class-diagram)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Contributing](#contributing)
 - [Authors](#authors)
-- [License](#license)
+
 
 ## Introduction
 This project is a collaborative software development effort aimed at solving real-world problems with innovative solutions. It is designed to be user-friendly, efficient, and scalable.
@@ -17,6 +18,9 @@ This project is a collaborative software development effort aimed at solving rea
 - Feature 1: Description of the first feature.
 - Feature 2: Description of the second feature.
 - Feature 3: Description of the third feature.
+
+## Class-Diagram
+![Class Diagram](./Class-Diagram.png)
 
 ## Installation
 To install and run the project locally, follow these steps:
