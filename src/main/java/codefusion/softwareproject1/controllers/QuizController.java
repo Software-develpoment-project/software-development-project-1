@@ -19,12 +19,6 @@ public class QuizController {
     @Autowired
     private QuizRepo quizRepository;
 
-    @Autowired
-    private QuestionRepo questionRepository;
-
-    @Autowired
-    private TeacherRepo teacherRepository;
-
     // CRUD for QuizClass
     @GetMapping
     public List<QuizClass> getAllQuizzes() {
@@ -67,31 +61,3 @@ public class QuizController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
-
-    // CRUD for QuestionsClass
-    @GetMapping("/{quizId}/questions")
-    public List<QuestionsClass> getQuestionsByQuiz(@PathVariable Long quizId) {
-        return questionRepository.findByQuizId(quizId);
-    }
-
-    @PostMapping("/{quizId}/questions")
-    public QuestionsClass addQuestionToQuiz(@PathVariable Long quizId, @RequestBody QuestionsClass question) {
-        return quizRepository.findById(quizId)
-                .map(quiz -> {
-                    question.setQuiz(quiz);
-                    return questionRepository.save(question);
-                })
-                .orElseThrow(() -> new RuntimeException("Quiz not found"));
-    }
-
-    // CRUD for TeacherClass
-    @GetMapping("/teachers")
-    public List<TeacherClass> getAllTeachers() {
-        return teacherRepository.findAll();
-    }
-
-    @PostMapping("/teachers")
-    public TeacherClass createTeacher(@RequestBody TeacherClass teacher) {
-        return teacherRepository.save(teacher);
-    }
-}
