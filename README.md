@@ -20,7 +20,7 @@ This project is a collaborative software development effort aimed at solving rea
 - Feature 3: Description of the third feature.
 
 ## Class-Diagram
-![Class Diagram](./Class-Diagram.png)
+![Class Diagram](./Class-Diagram.svg)
 
 ## Installation
 To install and run the project locally, follow these steps:
