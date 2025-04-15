@@ -8,11 +8,12 @@ import codefusion.softwareproject1.repo.QuestionRepo;
 import codefusion.softwareproject1.repo.TeacherRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
+@Controller
 @RequestMapping("/api/quizzes")
 public class TeacherController {
 
@@ -20,11 +21,13 @@ public class TeacherController {
     private TeacherRepo teacherRepository;
 
     @GetMapping("/teachers")
+    @ResponseBody
     public List<TeacherClass> getAllTeachers() {
         return teacherRepository.findAll();
     }
 
     @PostMapping("/teachers")
+    @ResponseBody
     public TeacherClass createTeacher(@RequestBody TeacherClass teacher) {
         return teacherRepository.save(teacher);
     }

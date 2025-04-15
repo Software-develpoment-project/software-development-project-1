@@ -8,11 +8,12 @@ import codefusion.softwareproject1.repo.QuestionRepo;
 import codefusion.softwareproject1.repo.TeacherRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
+@Controller
 @RequestMapping("/api/quizzes")
 public class QuizController {
 
@@ -21,16 +22,19 @@ public class QuizController {
 
     // CRUD for QuizClass
     @GetMapping
+    @ResponseBody
     public List<QuizClass> getAllQuizzes() {
         return quizRepository.findAll();
     }
 
     @PostMapping
+    @ResponseBody
     public QuizClass createQuiz(@RequestBody QuizClass quiz) {
         return quizRepository.save(quiz);
     }
 
     @GetMapping("/{id}")
+    @ResponseBody
     public ResponseEntity<QuizClass> getQuizById(@PathVariable Long id) {
         return quizRepository.findById(id)
                 .map(ResponseEntity::ok)
@@ -38,6 +42,7 @@ public class QuizController {
     }
 
     @PutMapping("/{id}")
+    @ResponseBody
     public ResponseEntity<QuizClass> updateQuiz(@PathVariable Long id, @RequestBody QuizClass updatedQuiz) {
         return quizRepository.findById(id)
                 .map(quiz -> {
@@ -53,6 +58,7 @@ public class QuizController {
     }
 
     @DeleteMapping("/{id}")
+    @ResponseBody
     public ResponseEntity<Object> deleteQuiz(@PathVariable Long id) {
         return quizRepository.findById(id)
                 .map(quiz -> {

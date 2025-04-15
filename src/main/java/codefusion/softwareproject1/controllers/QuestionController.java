@@ -8,12 +8,13 @@ import codefusion.softwareproject1.repo.QuestionRepo;
 import codefusion.softwareproject1.repo.TeacherRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/quizzes")
+@Controller
+@RequestMapping("/api/questions")
 public class QuestionController {
 
     @Autowired
@@ -36,5 +37,29 @@ public class QuestionController {
                     return questionRepository.save(question);
                 })
                 .orElseThrow(() -> new RuntimeException("Quiz not found"));
+    }
+
+    @GetMapping
+    @ResponseBody
+    public List<QuestionsClass> getAllQuestions() {
+        return questionRepository.findAll();
+    }
+
+    @PostMapping
+    @ResponseBody
+    public QuestionsClass createQuestion(@RequestBody QuestionsClass question) {
+        return questionRepository.save(question);
+    }
+
+    @GetMapping("/{id}")
+    @ResponseBody
+    public QuestionsClass getQuestionById(@PathVariable Long id) {
+        return questionRepository.findById(id).orElse(null);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseBody
+    public void deleteQuestion(@PathVariable Long id) {
+        questionRepository.deleteById(id);
     }
 }
