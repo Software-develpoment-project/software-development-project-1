@@ -1,4 +1,4 @@
-FROM openjdk:24-jdk
+FROM openjdk:21-jdk
 WORKDIR /opt/app
 COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
