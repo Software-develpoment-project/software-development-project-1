@@ -21,3 +21,4 @@ public class CategoryClass {
     private String name;
     private String description;
 }
+
