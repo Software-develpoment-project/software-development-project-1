@@ -8,7 +8,7 @@ import lombok.Setter;
 
 
 // Removed duplicate class definition
-@Data
+
 @Getter
 @Setter
 @AllArgsConstructor

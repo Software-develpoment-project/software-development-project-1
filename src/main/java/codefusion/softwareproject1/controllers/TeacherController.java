@@ -45,7 +45,7 @@ public class TeacherController {
 
         quiz.setName(updatedQuiz.getName());
         quiz.setDescription(updatedQuiz.getDescription());
-        quiz.setPublished(updatedQuiz.isPublished());
+        quiz.setPublished(updatedQuiz.published());
 
         quizRepository.save(quiz);
         return "Quiz updated successfully";
