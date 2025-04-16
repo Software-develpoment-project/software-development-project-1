@@ -12,4 +12,5 @@ import java.util.List;
 public interface ChoiceRepo extends JpaRepository<ChoiceClass, Long> {
     List<ChoiceClass> findByQuestion(QuestionsClass question);
     List<ChoiceClass> findByIsCorrect(boolean isCorrect);
+    List<ChoiceClass> findByQuestionAndIsCorrect(QuestionsClass question, boolean isCorrect);
 } 

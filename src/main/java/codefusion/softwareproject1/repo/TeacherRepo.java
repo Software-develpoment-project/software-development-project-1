@@ -10,6 +10,10 @@ import java.util.List;
 @Repository
 public interface TeacherRepo extends JpaRepository<TeacherClass, Long> {
     List<TeacherClass> findByName(String name);
+<<<<<<< HEAD
     TeacherClass findByEmail(String email);
     
+=======
+    List<TeacherClass> findByEmail(String email);
+>>>>>>> 89c85ad9460c651327a987d99a608ec1898507c4
 } 

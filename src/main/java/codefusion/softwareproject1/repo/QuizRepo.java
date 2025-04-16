@@ -12,6 +12,11 @@ import java.util.List;
 public interface QuizRepo extends JpaRepository<QuizClass, Long> {
     List<QuizClass> findByName(String name);
     List<QuizClass> findByPublished(boolean published);
+<<<<<<< HEAD
     List<QuizClass> findByTeachersId(Long teacherId);
     
+=======
+    List<QuizClass> findByTeachers(TeacherClass teacher);
+    List<QuizClass> findByNameContainingIgnoreCase(String keyword);
+>>>>>>> 89c85ad9460c651327a987d99a608ec1898507c4
 }
