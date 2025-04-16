@@ -80,3 +80,4 @@ CREATE TABLE student_quiz (
     FOREIGN KEY (student_id) REFERENCES student(id),
     FOREIGN KEY (quiz_id) REFERENCES quiz(id)
 );
+
