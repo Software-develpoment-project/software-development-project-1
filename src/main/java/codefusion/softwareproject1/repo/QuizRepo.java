@@ -11,6 +11,7 @@ import java.util.List;
 @Repository
 public interface QuizRepo extends JpaRepository<QuizClass, Long> {
     List<QuizClass> findByName(String name);
-    List<QuizClass> findByTeachers(TeacherClass teacher);
     List<QuizClass> findByPublished(boolean published);
+    List<QuizClass> findByTeachersId(Long teacherId);
+    
 }

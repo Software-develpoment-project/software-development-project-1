@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ChoiceDTO {
    
-    private String optionText;
-    private boolean isCorrect;
+    private String questionText;
+    private boolean answer;
 }
