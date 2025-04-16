@@ -52,7 +52,7 @@ public class QuizController {
                     quiz.setCategories(updatedQuiz.getCategories());
                     quiz.setPublished(updatedQuiz.isPublished());
                     quiz.setQuestions(updatedQuiz.getQuestions());
-                    quiz.setTeachers(updatedQuiz.getTeachers());
+                    quiz.setTeacher(updatedQuiz.getTeacher());
                     return ResponseEntity.ok(quizRepository.save(quiz));
                 })
                 .orElse(ResponseEntity.notFound().build());
