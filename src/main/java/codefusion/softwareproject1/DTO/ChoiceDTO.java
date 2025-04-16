@@ -8,14 +8,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChoiceDTO {
-<<<<<<< HEAD
     private Long id;
     private String content;
     private boolean isCorrect;
     private Long questionId;
-=======
-   
-    private String questionText;
-    private boolean answer;
->>>>>>> main
 }
