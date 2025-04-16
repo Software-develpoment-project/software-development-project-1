@@ -10,5 +10,5 @@ import java.util.List;
 @Repository
 public interface TeacherRepo extends JpaRepository<TeacherClass, Long> {
     List<TeacherClass> findByName(String name);
-    TeacherClass findByEmail(String email);
+    List<TeacherClass> findByEmail(String email);
 } 

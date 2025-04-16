@@ -5,10 +5,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class ChoiceDTO {
-   
-    private String optionText;
+    private Long id;
+    private String content;
     private boolean isCorrect;
+    private Long questionId;
 }
