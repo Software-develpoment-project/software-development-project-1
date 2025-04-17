@@ -2,148 +2,85 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">Quiz Application</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/dashboard/teacher">Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/api/quizzes">All Quizzes</a>
-                    </li>
-                </ul>
-                <span class="navbar-text me-3" th:text="'Welcome, ' + ${teacher.name}">Welcome, Teacher</span>
-                <a href="/logout" class="btn btn-outline-light btn-sm">Logout</a>
-            </div>
-        </div>
-    </nav>
+<body class="container py-5">
+    <h2>👩‍🏫 Teacher Dashboard</h2>
 
-    <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Teacher Dashboard</h1>
-            <a href="/quiz/create" class="btn btn-primary">Create New Quiz</a>
+    <!-- Add Quiz Form -->
+    <h4 class="mt-4">Add New Quiz</h4>
+    <form th:action="@{/api/teachers/add/quiz}" method="post" class="mb-4">
+        <div class="mb-3">
+            <label for="title" class="form-label">Quiz Title</label>
+            <input type="text" class="form-control" id="title" name="title" required>
         </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">Quiz Description</label>
+            <textarea class="form-control" id="description" name="description" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-success">Add Quiz</button>
+    </form>
 
-        <div class="row">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Your Quizzes</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive" th:if="${!quizzes.empty}">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Description</th>
-                                        <th>Questions</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="quiz : ${quizzes}">
-                                        <td th:text="${quiz.name}">Quiz Name</td>
-                                        <td th:text="${#strings.abbreviate(quiz.description, 50)}">Description</td>
-                                        <td th:text="${quiz.questions.size()}">0</td>
-                                        <td>
-                                            <span class="badge" th:classappend="${quiz.published} ? 'bg-success' : 'bg-warning'"
-                                                  th:text="${quiz.published} ? 'Published' : 'Draft'">Status</span>
-                                        </td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <a th:href="@{/quiz/{id}(id=${quiz.id})}" class="btn btn-info">View</a>
-                                                <a th:href="@{/quiz/{id}/edit(id=${quiz.id})}" class="btn btn-secondary">Edit</a>
-                                                <button class="btn btn-danger" th:attr="onclick=|confirmDelete('${quiz.id}', '${quiz.name}')|">Delete</button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <div class="alert alert-info" th:if="${quizzes.empty}">
-                            You haven't created any quizzes yet. Click the "Create New Quiz" button to get started.
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5>Quick Stats</h5>
-                    </div>
-                    <div class="card-body">
-                        <p>Total Quizzes: <strong th:text="${quizzes.size()}">0</strong></p>
-                        <p>Published Quizzes: <strong th:text="${quizzes.stream().filter(q -> q.isPublished()).count()}">0</strong></p>
-                        <p>Draft Quizzes: <strong th:text="${quizzes.stream().filter(q -> !q.isPublished()).count()}">0</strong></p>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Quick Links</h5>
-                    </div>
-                    <div class="card-body">
-                        <ul class="list-group">
-                            <li class="list-group-item">
-                                <a href="/quiz/create">Create New Quiz</a>
-                            </li>
-                            <li class="list-group-item">
-                                <a href="/api/quizzes">View All Quizzes</a>
-                            </li>
-                            <li class="list-group-item">
-                                <a href="/profile/edit">Edit Profile</a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- List of Existing Quizzes -->
+    <h4>📄 Your Quizzes</h4>
+    <div th:if="${quizzes != null}">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="quiz : ${quizzes}">
+                    <td th:text="${quiz.id}"></td>
+                    <td th:text="${quiz.title}"></td>
+                    <td th:text="${quiz.description}"></td>
+                    <td>
+                        <!-- Edit Button opens form below -->
+                        <button class="btn btn-warning btn-sm" 
+                                onclick="fillEditForm([[${quiz.id}]], '[[${quiz.title}]]', '[[${quiz.description}]]')">
+                            Edit
+                        </button>
+                        <a th:href="@{'/api/teachers/delete/' + ${quiz.id}}" class="btn btn-danger btn-sm"
+                           onclick="return confirm('Are you sure you want to delete this quiz?');">Delete</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    
-    <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirm Delete</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    Are you sure you want to delete "<span id="quizNameToDelete"></span>"?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <form id="deleteForm" method="POST">
-                        <input type="hidden" name="_method" value="DELETE">
-                        <button type="submit" class="btn btn-danger">Delete</button>
-                    </form>
-                </div>
+
+    <!-- Edit Quiz Form -->
+    <div class="mt-5">
+        <h4>Edit Quiz</h4>
+        <form id="editForm" th:action="@{/api/teachers/edit/__id__}" method="post">
+            <input type="hidden" id="editId" name="id">
+            <div class="mb-3">
+                <label for="editTitle" class="form-label">Title</label>
+                <input type="text" class="form-control" id="editTitle" name="title" required>
             </div>
-        </div>
+            <div class="mb-3">
+                <label for="editDescription" class="form-label">Description</label>
+                <textarea class="form-control" id="editDescription" name="description" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Quiz</button>
+        </form>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <br><a href="/dashboard" class="btn btn-outline-dark mt-4">← Back to Dashboard</a>
+
     <script>
-        function confirmDelete(id, name) {
-            document.getElementById('quizNameToDelete').textContent = name;
-            document.getElementById('deleteForm').action = '/api/quizzes/' + id;
-            
-            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            deleteModal.show();
+        function fillEditForm(id, title, description) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editTitle').value = title;
+            document.getElementById('editDescription').value = description;
+
+            // Update form action dynamically
+            document.getElementById('editForm').action = '/api/teachers/edit/' + id;
+            window.scrollTo({ top: document.getElementById('editForm').offsetTop, behavior: 'smooth' });
         }
     </script>
 </body>

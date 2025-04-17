@@ -10,7 +10,7 @@ RUN ./mvnw dependency:go-offline
 COPY ./src ./src
 RUN ./mvnw clean install -DskipTests
 
-# If you don't want to install find:
+
 RUN cp target/*.jar app.jar
 
 EXPOSE 8080

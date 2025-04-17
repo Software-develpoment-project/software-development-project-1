@@ -1,18 +1,25 @@
 package codefusion.softwareproject1.controllers;
 
-import codefusion.softwareproject1.Models.QuizClass;
-import codefusion.softwareproject1.Models.QuestionsClass;
-import codefusion.softwareproject1.Models.TeacherClass;
-import codefusion.softwareproject1.repo.QuizRepo;
-import codefusion.softwareproject1.repo.QuestionRepo;
-import codefusion.softwareproject1.repo.TeacherRepo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
-@RestController
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import codefusion.softwareproject1.Models.QuestionsClass;
+import codefusion.softwareproject1.Models.QuizClass;
+import codefusion.softwareproject1.Models.TeacherClass;
+import codefusion.softwareproject1.repo.QuestionRepo;
+import codefusion.softwareproject1.repo.QuizRepo;
+import codefusion.softwareproject1.repo.TeacherRepo;
+
+
 @RequestMapping("/api/quizzes")
 public class QuizController {
 

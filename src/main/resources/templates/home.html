@@ -2,72 +2,20 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Application</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            padding-top: 2rem;
-        }
-        .jumbotron {
-            padding: 2rem;
-            background-color: #f8f9fa;
-            border-radius: 0.3rem;
-            margin-bottom: 2rem;
-        }
-        .card {
-            margin-bottom: 1.5rem;
-        }
-    </style>
+    <title>Quiz App - Home</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
-<body>
-    <div class="container">
-        <div class="jumbotron">
-            <h1 class="display-4">Welcome to the Quiz Application</h1>
-            <p class="lead">A platform for creating and managing quizzes for teachers and students.</p>
-            <hr class="my-4">
-            <p>Get started by exploring available quizzes or creating your own.</p>
-        </div>
+<body class="container py-5">
+    <h1 class="text-center mb-4">📚 Welcome to the Quiz Application</h1>
 
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>For Teachers</h5>
-                    </div>
-                    <div class="card-body">
-                        <p>Create and manage your quizzes.</p>
-                        <a href="/dashboard/teacher" class="btn btn-primary">Teacher Dashboard</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>For Students</h5>
-                    </div>
-                    <div class="card-body">
-                        <p>Take quizzes and view your results.</p>
-                        <a href="/dashboard/student" class="btn btn-success">Student Dashboard</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card mt-4">
-            <div class="card-header">
-                <h5>API Endpoints</h5>
-            </div>
-            <div class="card-body">
-                <ul class="list-group">
-                    <li class="list-group-item"><a href="/api/quizzes">List all quizzes</a></li>
-                    <li class="list-group-item"><a href="/api/quizzes/teachers">List all teachers</a></li>
-                    <li class="list-group-item"><a href="/health">Health check</a></li>
-                </ul>
-            </div>
-        </div>
+    <p class="text-center">Explore available routes and features:</p>
+    
+    <div class="list-group">
+        <a href="/dashboard" class="list-group-item list-group-item-action">Dashboard</a>
+        <a href="/dashboard/teacher" class="list-group-item list-group-item-action">Teacher Dashboard</a>
+        <a href="/dashboard/student" class="list-group-item list-group-item-action">Student Dashboard</a>
+        <a href="/api-info" class="list-group-item list-group-item-action">API Info</a>
+        <a href="/health" class="list-group-item list-group-item-action">Service Health Check</a>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
