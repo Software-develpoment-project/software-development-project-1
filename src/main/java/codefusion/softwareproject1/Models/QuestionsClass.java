@@ -1,6 +1,8 @@
 package codefusion.softwareproject1.Models;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
@@ -8,7 +10,9 @@ import jakarta.persistence.*;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 
-@Data
+
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -36,6 +40,11 @@ public class QuestionsClass {
     @ManyToOne
     @JoinColumn(name = "quiz_id", nullable = false)
     private QuizClass quiz;
+<<<<<<< HEAD
+=======
+    
+    
+>>>>>>> 07c750034530b1e52c8f58838cbc532d6bef1c8a
     
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FeedbackClass> feedbacks;

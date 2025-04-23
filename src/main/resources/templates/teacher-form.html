@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${teacher.id == null ? 'Add Teacher' : 'Edit Teacher'}">Teacher Form</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 th:text="${teacher.id == null ? 'Add New Teacher' : 'Edit Teacher'}">Teacher Form</h1>
+        
+        <div th:if="${message}" class="alert alert-success" role="alert">
+            <span th:text="${message}"></span>
+        </div>
+        
+        <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+            <span th:text="${errorMessage}"></span>
+        </div>
+        
+        <form th:action="${teacher.id == null ? '/quizzes/teachers/save' : '/quizzes/teachers/update'}" 
+              th:object="${teacher}" method="post">
+            <input type="hidden" th:if="${teacher.id != null}" th:field="*{id}" />
+            
+            <div class="mb-3">
+                <label for="name" class="form-label">Name</label>
+                <input type="text" class="form-control" id="name" th:field="*{name}" required>
+                <span class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+            </div>
+            
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" th:field="*{email}" required>
+                <span class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+            </div>
+            
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a th:href="@{/quizzes/teachers}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -29,7 +29,5 @@ public class FeedbackClass {
     @Column(name = "is_correct")
     private boolean isCorrect;
     
-    @ManyToOne
-    @JoinColumn(name = "question_id", nullable = false)
-    private QuestionsClass question;
+    
 } 

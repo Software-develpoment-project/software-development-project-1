@@ -16,29 +16,32 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "choice")
+<<<<<<< HEAD
+=======
+@Entity
+>>>>>>> 07c750034530b1e52c8f58838cbc532d6bef1c8a
 public class ChoiceClass {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    @Column(name = "content", nullable = false)
-    private String content;
-    
-    @Column(name = "is_correct")
-    private boolean isCorrect;
+
+    private String text;
+
+    private boolean correct;
 
     @ManyToOne
-    @JoinColumn(name = "question_id", nullable = false)
+    @JoinColumn(name = "question_id")
     private QuestionsClass question;
 
-    // Getter to provide backwards compatibility with existing code
-    public String getOptionText() {
-        return this.content;
+    public String getText() {
+        return text;
     }
-    
-    // Setter to provide backwards compatibility with existing code
-    public void setOptionText(String optionText) {
-        this.content = optionText;
+
+    public void setText(String text) {
+        this.text = text;
     }
+
+    // getters and setters for id, correct, and question
 }
+
