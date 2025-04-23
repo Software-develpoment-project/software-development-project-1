@@ -1,4 +1,5 @@
 package codefusion.softwareproject1.Models;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,34 +12,22 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "choice")
 @Entity
-public class ChoiceClass {
+@Table(name = "feedback")
+public class FeedbackClass {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String text;
-
-    private boolean correct;
-
-    @ManyToOne
-    @JoinColumn(name = "question_id")
-    private QuestionsClass question;
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    // getters and setters for id, correct, and question
-}
-
+    
+    @Column(name = "message")
+    private String message;
+    
+    @Column(name = "is_correct")
+    private boolean isCorrect;
+    
+    
+} 

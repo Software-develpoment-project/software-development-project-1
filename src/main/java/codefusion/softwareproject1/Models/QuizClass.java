@@ -1,21 +1,15 @@
 package codefusion.softwareproject1.Models;
 
-import java.util.List;
 import jakarta.persistence.*;
-import jakarta.persistence.OneToMany;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
+import java.util.List;
 
 @Entity
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@Table(name = "quiz")
 public class QuizClass {
 
     @Id
@@ -23,18 +17,25 @@ public class QuizClass {
     private Long id;
 
     private String name;
-
     private String description;
 
-    private List<CategoryClass> categories ;
+    public enum Difficulty {
+        EASY, MEDIUM, HARD
+    }
+
+    public enum Topic {
+        MATH, SCIENCE, HISTORY, TECHNOLOGY
+    }
+
+    @Enumerated(EnumType.STRING)
+    private Difficulty difficulty;
+
+    @Enumerated(EnumType.STRING)
+    private Topic topic;
 
     private boolean published;
 
-    @OneToMany(mappedBy = "question_id" )
-    private List<QuestionsClass> questions;
-    
     @ManyToOne
     @JoinColumn(name = "teacher_id")
-    private List<TeacherClass> teachers;
-
+    private TeacherClass teacher;
 }

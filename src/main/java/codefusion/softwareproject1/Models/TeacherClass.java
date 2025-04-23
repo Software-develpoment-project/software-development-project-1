@@ -9,19 +9,21 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
+@Table(name = "teacher")
 public class TeacherClass {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "username")
     private String name;
 
+    
+    
+    @Column(name = "email")
     private String email;
 
     @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuizClass> quizzes;
-
-
-    
 }
