@@ -2,128 +2,86 @@
 <html xmlns:th="http://www.thymeleaf.org" 
       th:replace="~{layout :: layout(~{::title}, ~{::section})}">
 <head>
-    <title th:text="${question.id == null ? 'Create Question' : 'Edit Question'}">Question Form</title>
+    <title th:text="${question.id == null ? 'New Question' : 'Edit Question'}">Question Form</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
     <section>
-        <div class="row mb-4">
-            <div class="col">
-                <h1 th:text="${question.id == null ? 'Create New Question' : 'Edit Question'}">Question Form</h1>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/quizzes">Quizzes</a></li>
-                        <li class="breadcrumb-item">
-                            <a th:href="@{'/quizzes/' + ${quiz.id} + '/questions'}" th:text="${quiz.name}">Quiz Name</a>
-                        </li>
-                        <li class="breadcrumb-item active" th:text="${question.id == null ? 'Create Question' : 'Edit Question'}">Form</li>
-                    </ol>
-                </nav>
+        <div class="container">
+            <div class="row mb-4">
+                <div class="col">
+                    <h1 th:text="${question.id == null ? 'Create Question' : 'Edit Question'}">Question Form</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/quizzes">Quizzes</a></li>
+                            <li class="breadcrumb-item">
+                                <a th:href="@{'/quizzes/' + ${quiz.id} + '/questions'}" th:text="${quiz.title}">Quiz Title</a>
+                            </li>
+                            <li class="breadcrumb-item active" th:text="${question.id == null ? 'Create Question' : 'Edit Question'}">Form</li>
+                        </ol>
+                    </nav>
+                </div>
             </div>
-        </div>
-
-        <div class="card">
-            <div class="card-body">
-                <form th:if="${question.id == null}" 
-                      th:action="@{'/quizzes/' + ${quiz.id} + '/questions/save'}" 
-                      th:object="${question}" 
-                      method="post">
-                    
-                    <div class="mb-3">
-                        <label for="content" class="form-label">Question Content</label>
-                        <textarea class="form-control" id="content" th:field="*{content}" rows="3" required></textarea>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="difficultyLevel" class="form-label">Difficulty Level</label>
-                        <select class="form-select" id="difficultyLevel" th:field="*{difficultyLevel}" required>
-                            <option th:each="level : ${difficultyLevels}" 
-                                    th:value="${level}" 
-                                    th:text="${level}">
-                                EASY
-                            </option>
-                        </select>
-                    </div>
-                    
-                    <h3 class="mt-4">Answer Choices</h3>
-                    <p class="text-muted">Add options for this question and select the correct answer.</p>
-                    
-                    <div class="row" th:each="choice, choiceStat : *{choices}">
-                        <div class="col-10 mb-3">
-                            <label class="form-label" th:for="${'choice' + choiceStat.index}" 
-                                   th:text="${'Choice ' + choiceStat.count}">Choice 1</label>
-                            <input type="text" class="form-control" 
-                                   th:field="*{choices[__${choiceStat.index}__].text}" 
-                                   th:id="${'choice' + choiceStat.index}" required>
-                        </div>
-                        <div class="col-2 mb-3 d-flex align-items-end">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="correctChoiceIndex" 
-                                       th:id="${'correctChoice' + choiceStat.index}" 
-                                       th:value="${choiceStat.index}" 
-                                       th:checked="${choiceStat.index == 0}" required>
-                                <label class="form-check-label" th:for="${'correctChoice' + choiceStat.index}">
-                                    Correct
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                        <a th:href="@{'/quizzes/' + ${quiz.id} + '/questions'}" class="btn btn-secondary me-md-2">Cancel</a>
-                        <button type="submit" class="btn btn-primary">Create Question</button>
-                    </div>
-                </form>
-                
-                <form th:if="${question.id != null}" 
-                      th:action="@{'/quizzes/' + ${quiz.id} + '/questions/' + ${question.id} + '/update'}" 
-                      th:object="${question}" 
-                      method="post">
-                    
-                    <div class="mb-3">
-                        <label for="content" class="form-label">Question Content</label>
-                        <textarea class="form-control" id="content" th:field="*{content}" rows="3" required></textarea>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="difficultyLevel" class="form-label">Difficulty Level</label>
-                        <select class="form-select" id="difficultyLevel" th:field="*{difficultyLevel}" required>
-                            <option th:each="level : ${difficultyLevels}" 
-                                    th:value="${level}" 
-                                    th:text="${level}">
-                                EASY
-                            </option>
-                        </select>
-                    </div>
-                    
-                    <h3 class="mt-4">Answer Choices</h3>
-                    <p class="text-muted">Add options for this question and select the correct answer.</p>
-                    
-                    <div class="row" th:each="choice, choiceStat : *{choices}">
-                        <div class="col-10 mb-3">
-                            <label class="form-label" th:for="${'choice' + choiceStat.index}" 
-                                   th:text="${'Choice ' + choiceStat.count}">Choice 1</label>
-                            <input type="text" class="form-control" 
-                                   th:field="*{choices[__${choiceStat.index}__].text}" 
-                                   th:id="${'choice' + choiceStat.index}" required>
-                        </div>
-                        <div class="col-2 mb-3 d-flex align-items-end">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="correctChoiceIndex" 
-                                       th:id="${'correctChoice' + choiceStat.index}" 
-                                       th:value="${choiceStat.index}" 
-                                       th:checked="${choice.correct}" required>
-                                <label class="form-check-label" th:for="${'correctChoice' + choiceStat.index}">
-                                    Correct
-                                </label>
-                            </div>
+            
+            <div class="row">
+                <div class="col-md-8 mx-auto">
+                    <div class="card">
+                        <div class="card-body">
+                            <form th:action="${question.id == null ? 
+                                               '/quizzes/' + quiz.id + '/questions/save' : 
+                                               '/quizzes/' + quiz.id + '/questions/' + question.id + '/update'}" 
+                                  th:object="${question}" method="post">
+                                
+                                <input type="hidden" th:field="*{id}" />
+                                
+                                <div class="mb-3">
+                                    <label for="questionText" class="form-label">Question Text <span class="text-danger">*</span></label>
+                                    <textarea th:field="*{questionText}" class="form-control" rows="3" required placeholder="Enter the question text"></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="difficultyLevel" class="form-label">Difficulty Level</label>
+                                    <select th:field="*{difficultyLevel}" class="form-select">
+                                        <option th:each="level : ${difficultyLevels}" 
+                                                th:value="${level}" 
+                                                th:text="${level}">Level</option>
+                                    </select>
+                                </div>
+                                
+                                <h3 class="mt-4">Answer Options</h3>
+                                <hr />
+                                
+                                <div class="row" th:each="answerOption, answerStat : *{answerOptions}">
+                                    <div class="col-md-8 mb-3">
+                                        <label class="form-label" th:for="${'answerOption' + answerStat.index}"
+                                               th:text="${'Option ' + answerStat.count}">Option 1</label>
+                                        <input type="text" class="form-control" 
+                                               th:field="*{answerOptions[__${answerStat.index}__].answerText}"
+                                               th:id="${'answerOption' + answerStat.index}" required
+                                               placeholder="Enter answer option text">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="form-check mt-4">
+                                            <input class="form-check-input" type="radio" name="correctChoiceIndex" 
+                                                   th:id="${'correctChoice' + answerStat.index}"
+                                                   th:value="${answerStat.index}"
+                                                   th:checked="${answerStat.index == 0}" required>
+                                            <label class="form-check-label" th:for="${'correctChoice' + answerStat.index}"
+                                                   title="Mark this as the correct answer">
+                                                Correct Answer
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between mt-4">
+                                    <a th:href="@{/quizzes/{id}/questions(id=${quiz.id})}" class="btn btn-secondary">Cancel</a>
+                                    <button type="submit" class="btn btn-primary">Save Question</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
-                    
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                        <a th:href="@{'/quizzes/' + ${quiz.id} + '/questions'}" class="btn btn-secondary me-md-2">Cancel</a>
-                        <button type="submit" class="btn btn-primary">Update Question</button>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
     </section>

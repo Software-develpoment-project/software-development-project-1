@@ -1,9 +1,9 @@
 package codefusion.softwareproject1.controllers;
 
-import codefusion.softwareproject1.Models.QuizClass;
-import codefusion.softwareproject1.Models.ChoiceClass;
-import codefusion.softwareproject1.Models.QuestionsClass;
-import codefusion.softwareproject1.Models.TeacherClass;
+import codefusion.softwareproject1.entity.Quiz;
+import codefusion.softwareproject1.entity.AnswerOption;
+import codefusion.softwareproject1.entity.Question;
+import codefusion.softwareproject1.entity.Teacher;
 import codefusion.softwareproject1.repo.QuizRepo;
 import codefusion.softwareproject1.repo.QuestionRepo;
 import codefusion.softwareproject1.repo.TeacherRepo;
@@ -33,30 +33,23 @@ public class QuizController {
 
     @GetMapping
     public String getAllQuizzes(Model model) {
-        List<QuizClass> quizzes = quizRepository.findAll();
+        List<Quiz> quizzes = quizRepository.findAll();
         model.addAttribute("quizzes", quizzes);
         return "quiz-list";
     }
 
     @GetMapping("/new")
     public String showCreateQuizForm(Model model) {
-        QuizClass quiz = new QuizClass();
-        List<TeacherClass> teachers = teacherRepository.findAll();
+        Quiz quiz = new Quiz();
+        List<Teacher> teachers = teacherRepository.findAll();
 
         model.addAttribute("quiz", quiz);
         model.addAttribute("teachers", teachers);
-        model.addAttribute("difficulties", QuizClass.Difficulty.values());
-        model.addAttribute("topics", QuizClass.Topic.values());
         return "quiz-form";
     }
 
     @PostMapping("/save")
-    public String createQuiz(@ModelAttribute QuizClass quiz, RedirectAttributes redirectAttributes) {
-        if (quiz.getTeacher() != null && quiz.getTeacher().getId() != null) {
-            TeacherClass teacher = teacherRepository.findById(quiz.getTeacher().getId()).orElse(null);
-            quiz.setTeacher(teacher);
-        }
-
+    public String createQuiz(@ModelAttribute Quiz quiz, RedirectAttributes redirectAttributes) {
         quizRepository.save(quiz);
         redirectAttributes.addFlashAttribute("message", "Quiz created successfully!");
         return "redirect:/quizzes";
@@ -64,7 +57,7 @@ public class QuizController {
 
     @GetMapping("/{id}")
     public String getQuizById(@PathVariable Long id, Model model) {
-        Optional<QuizClass> quizOpt = quizRepository.findById(id);
+        Optional<Quiz> quizOpt = quizRepository.findById(id);
         if (quizOpt.isPresent()) {
             model.addAttribute("quiz", quizOpt.get());
             return "quiz-details";
@@ -76,13 +69,11 @@ public class QuizController {
 
     @GetMapping("/{id}/edit")
     public String showEditQuizForm(@PathVariable Long id, Model model) {
-        Optional<QuizClass> quizOpt = quizRepository.findById(id);
+        Optional<Quiz> quizOpt = quizRepository.findById(id);
         if (quizOpt.isPresent()) {
-            List<TeacherClass> teachers = teacherRepository.findAll();
+            List<Teacher> teachers = teacherRepository.findAll();
             model.addAttribute("quiz", quizOpt.get());
             model.addAttribute("teachers", teachers);
-            model.addAttribute("difficulties", QuizClass.Difficulty.values());
-            model.addAttribute("topics", QuizClass.Topic.values());
             return "quiz-form";
         } else {
             model.addAttribute("errorMessage", "Quiz not found!");
@@ -91,23 +82,17 @@ public class QuizController {
     }
 
     @PostMapping("/update")
-    public String updateQuiz(@ModelAttribute QuizClass updatedQuiz, RedirectAttributes redirectAttributes) {
-        Optional<QuizClass> quizOpt = quizRepository.findById(updatedQuiz.getId());
+    public String updateQuiz(@ModelAttribute Quiz updatedQuiz, RedirectAttributes redirectAttributes) {
+        Optional<Quiz> quizOpt = quizRepository.findById(updatedQuiz.getId());
         if (quizOpt.isPresent()) {
-            QuizClass quiz = quizOpt.get();
-            quiz.setName(updatedQuiz.getName());
+            Quiz quiz = quizOpt.get();
+            quiz.setTitle(updatedQuiz.getTitle());
             quiz.setDescription(updatedQuiz.getDescription());
+            quiz.setPublished(updatedQuiz.isPublished());
             quiz.setDifficulty(updatedQuiz.getDifficulty());
             quiz.setTopic(updatedQuiz.getTopic());
-            quiz.setPublished(updatedQuiz.isPublished());
-
-            if (updatedQuiz.getTeacher() != null && updatedQuiz.getTeacher().getId() != null) {
-                TeacherClass teacher = teacherRepository.findById(updatedQuiz.getTeacher().getId()).orElse(null);
-                quiz.setTeacher(teacher);
-            } else {
-                quiz.setTeacher(null);
-            }
-
+            quiz.setTeacher(updatedQuiz.getTeacher());
+            
             quizRepository.save(quiz);
             redirectAttributes.addFlashAttribute("message", "Quiz updated successfully!");
         } else {
@@ -118,7 +103,7 @@ public class QuizController {
 
     @PostMapping("/{id}/delete")
     public String deleteQuiz(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        Optional<QuizClass> quizOpt = quizRepository.findById(id);
+        Optional<Quiz> quizOpt = quizRepository.findById(id);
         if (quizOpt.isPresent()) {
             quizRepository.delete(quizOpt.get());
             redirectAttributes.addFlashAttribute("message", "Quiz deleted successfully!");
@@ -129,15 +114,12 @@ public class QuizController {
     }
 
     // Question Management
-    // Make sure to add this import
-
-    // Question Management
     @GetMapping("/{quizId}/questions")
     public String getQuestionsByQuiz(@PathVariable Long quizId, Model model) {
-        Optional<QuizClass> quizOpt = quizRepository.findById(quizId);
+        Optional<Quiz> quizOpt = quizRepository.findById(quizId);
         if (quizOpt.isPresent()) {
-            QuizClass quiz = quizOpt.get();
-            List<QuestionsClass> questions = questionRepository.findByQuizId(quizId);
+            Quiz quiz = quizOpt.get();
+            List<Question> questions = questionRepository.findByQuizId(quizId);
 
             model.addAttribute("quiz", quiz);
             model.addAttribute("questions", questions);
@@ -150,26 +132,26 @@ public class QuizController {
 
     @GetMapping("/{quizId}/questions/create")
     public String showCreateQuestionForm(@PathVariable Long quizId, Model model) {
-        Optional<QuizClass> quizOpt = quizRepository.findById(quizId);
+        Optional<Quiz> quizOpt = quizRepository.findById(quizId);
         if (quizOpt.isPresent()) {
-            QuizClass quiz = quizOpt.get();
-            QuestionsClass question = new QuestionsClass();
+            Quiz quiz = quizOpt.get();
+            Question question = new Question();
 
             // Initialize the question with the quiz
             question.setQuiz(quiz);
 
-            // Create default empty choices
-            List<ChoiceClass> choices = new ArrayList<>();
+            // Create default empty answer options
+            List<AnswerOption> answerOptions = new ArrayList<>();
             for (int i = 0; i < 4; i++) {
-                ChoiceClass choice = new ChoiceClass();
-                choice.setQuestion(question);
-                choices.add(choice);
+                AnswerOption option = new AnswerOption();
+                option.setQuestion(question);
+                answerOptions.add(option);
             }
-            question.setChoices(choices);
+            question.setAnswerOptions(answerOptions);
 
             model.addAttribute("quiz", quiz);
             model.addAttribute("question", question);
-            model.addAttribute("difficultyLevels", QuestionsClass.DifficultyLevel.values());
+            model.addAttribute("difficultyLevels", Question.DifficultyLevel.values());
             return "question-form";
         } else {
             model.addAttribute("errorMessage", "Quiz not found!");
@@ -180,27 +162,27 @@ public class QuizController {
     @PostMapping("/{quizId}/questions/save")
     public String createQuestion(
             @PathVariable Long quizId,
-            @ModelAttribute QuestionsClass question,
+            @ModelAttribute Question question,
             @RequestParam("correctChoiceIndex") Integer correctChoiceIndex,
             RedirectAttributes redirectAttributes) {
 
-        Optional<QuizClass> quizOpt = quizRepository.findById(quizId);
+        Optional<Quiz> quizOpt = quizRepository.findById(quizId);
         if (quizOpt.isPresent()) {
-            QuizClass quiz = quizOpt.get();
+            Quiz quiz = quizOpt.get();
             question.setQuiz(quiz);
 
             // Set correct answer
             if (correctChoiceIndex != null && correctChoiceIndex >= 0 &&
-                    correctChoiceIndex < question.getChoices().size()) {
-                for (int i = 0; i < question.getChoices().size(); i++) {
-                    ChoiceClass choice = question.getChoices().get(i);
+                    correctChoiceIndex < question.getAnswerOptions().size()) {
+                for (int i = 0; i < question.getAnswerOptions().size(); i++) {
+                    AnswerOption choice = question.getAnswerOptions().get(i);
                     choice.setCorrect(i == correctChoiceIndex);
                     choice.setQuestion(question);
                 }
             }
 
             questionRepository.save(question);
-            redirectAttributes.addFlashAttribute("message", "Question added successfully!");
+            redirectAttributes.addFlashAttribute("message", "Question created successfully!");
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "Quiz not found!");
         }
@@ -212,21 +194,28 @@ public class QuizController {
             @PathVariable Long quizId,
             @PathVariable Long questionId,
             Model model) {
-
-        Optional<QuizClass> quizOpt = quizRepository.findById(quizId);
-        Optional<QuestionsClass> questionOpt = questionRepository.findById(questionId);
+        Optional<Quiz> quizOpt = quizRepository.findById(quizId);
+        Optional<Question> questionOpt = questionRepository.findById(questionId);
 
         if (quizOpt.isPresent() && questionOpt.isPresent()) {
-            QuizClass quiz = quizOpt.get();
-            QuestionsClass question = questionOpt.get();
+            model.addAttribute("quiz", quizOpt.get());
+            model.addAttribute("question", questionOpt.get());
+            model.addAttribute("difficultyLevels", Question.DifficultyLevel.values());
+            
+            // Find the index of the correct answer option to pre-select it in the form
+            List<AnswerOption> answerOptions = questionOpt.get().getAnswerOptions();
+            for (int i = 0; i < answerOptions.size(); i++) {
+                if (answerOptions.get(i).isCorrect()) {
+                    model.addAttribute("correctChoiceIndex", i);
+                    break;
+                }
+            }
 
-            model.addAttribute("quiz", quiz);
-            model.addAttribute("question", question);
-            model.addAttribute("difficultyLevels", QuestionsClass.DifficultyLevel.values());
             return "question-form";
         } else {
-            model.addAttribute("errorMessage", "Quiz or Question not found!");
-            return "redirect:/quizzes";
+            model.addAttribute("errorMessage", 
+                    questionOpt.isPresent() ? "Quiz not found!" : "Question not found!");
+            return "redirect:/quizzes/" + quizId + "/questions";
         }
     }
 
@@ -234,50 +223,37 @@ public class QuizController {
     public String updateQuestion(
             @PathVariable Long quizId,
             @PathVariable Long questionId,
-            @ModelAttribute QuestionsClass updatedQuestion,
+            @ModelAttribute Question updatedQuestion,
             @RequestParam("correctChoiceIndex") Integer correctChoiceIndex,
             RedirectAttributes redirectAttributes) {
-
-        Optional<QuestionsClass> questionOpt = questionRepository.findById(questionId);
+        
+        Optional<Question> questionOpt = questionRepository.findById(questionId);
         if (questionOpt.isPresent()) {
-            QuestionsClass question = questionOpt.get();
-            question.setContent(updatedQuestion.getContent());
+            Question question = questionOpt.get();
+            
+            // Update basic fields
+            question.setQuestionText(updatedQuestion.getQuestionText());
             question.setDifficultyLevel(updatedQuestion.getDifficultyLevel());
-
-            // Update choices and set correct answer
-            List<ChoiceClass> existingChoices = question.getChoices();
-            List<ChoiceClass> updatedChoices = updatedQuestion.getChoices();
-
-            // Update existing choices or create new ones
-            for (int i = 0; i < updatedChoices.size(); i++) {
-                ChoiceClass updatedChoice = updatedChoices.get(i);
-
-                if (i < existingChoices.size()) {
-                    // Update existing choice
-                    ChoiceClass existingChoice = existingChoices.get(i);
-                    existingChoice.setText(updatedChoice.getText());
-                    existingChoice.setCorrect(i == correctChoiceIndex);
-                } else {
-                    // Add new choice
-                    ChoiceClass newChoice = new ChoiceClass();
-                    newChoice.setText(updatedChoice.getText());
-                    newChoice.setCorrect(i == correctChoiceIndex);
-                    newChoice.setQuestion(question);
-                    existingChoices.add(newChoice);
-                }
+            question.setPoints(updatedQuestion.getPoints());
+            
+            // Update answer options
+            List<AnswerOption> existingOptions = question.getAnswerOptions();
+            List<AnswerOption> updatedOptions = updatedQuestion.getAnswerOptions();
+            
+            for (int i = 0; i < Math.min(existingOptions.size(), updatedOptions.size()); i++) {
+                AnswerOption existingOption = existingOptions.get(i);
+                AnswerOption updatedOption = updatedOptions.get(i);
+                
+                existingOption.setAnswerText(updatedOption.getAnswerText());
+                existingOption.setCorrect(i == correctChoiceIndex);
             }
-
-            // Remove extra choices if needed
-            while (existingChoices.size() > updatedChoices.size()) {
-                existingChoices.remove(existingChoices.size() - 1);
-            }
-
+            
             questionRepository.save(question);
             redirectAttributes.addFlashAttribute("message", "Question updated successfully!");
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "Question not found!");
         }
-
+        
         return "redirect:/quizzes/" + quizId + "/questions";
     }
 
@@ -286,41 +262,38 @@ public class QuizController {
             @PathVariable Long quizId,
             @PathVariable Long questionId,
             RedirectAttributes redirectAttributes) {
-
-        Optional<QuestionsClass> questionOpt = questionRepository.findById(questionId);
+        
+        Optional<Question> questionOpt = questionRepository.findById(questionId);
         if (questionOpt.isPresent()) {
             questionRepository.delete(questionOpt.get());
             redirectAttributes.addFlashAttribute("message", "Question deleted successfully!");
         } else {
             redirectAttributes.addFlashAttribute("errorMessage", "Question not found!");
         }
-
+        
         return "redirect:/quizzes/" + quizId + "/questions";
     }
 
     // Teacher Management
     @GetMapping("/teachers")
     public String getAllTeachers(Model model) {
-        List<TeacherClass> teachers = teacherRepository.findAll();
+        List<Teacher> teachers = teacherRepository.findAll();
         model.addAttribute("teachers", teachers);
-        return "teachers-list";
+        return "teacher-list";
     }
 
     @GetMapping("/teachers/new")
     public String showCreateTeacherForm(Model model) {
-        TeacherClass teacher = new TeacherClass();
-        model.addAttribute("teacher", teacher);
+        model.addAttribute("teacher", new Teacher());
         return "teacher-form";
     }
 
     @PostMapping("/teachers/save")
     public String createTeacher(
-            @ModelAttribute TeacherClass teacher,
+            @ModelAttribute Teacher teacher,
             RedirectAttributes redirectAttributes) {
-
         teacherRepository.save(teacher);
-        redirectAttributes.addFlashAttribute("message", "Teacher added successfully!");
+        redirectAttributes.addFlashAttribute("message", "Teacher created successfully!");
         return "redirect:/quizzes/teachers";
     }
-
 }

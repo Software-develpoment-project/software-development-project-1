@@ -2,17 +2,17 @@
 <html xmlns:th="http://www.thymeleaf.org" 
       th:replace="~{layout :: layout(~{::title}, ~{::section})}">
 <head>
-    <title th:text="${'Questions for Quiz: ' + quiz.name}">Questions List</title>
+    <title th:text="${'Questions for Quiz: ' + quiz.title}">Questions List</title>
 </head>
 <body>
     <section>
         <div class="row mb-4">
             <div class="col">
-                <h1 th:text="${'Questions for Quiz: ' + quiz.name}">Questions List</h1>
+                <h1 th:text="${'Questions for Quiz: ' + quiz.title}">Questions List</h1>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="/quizzes">Quizzes</a></li>
-                        <li class="breadcrumb-item active" th:text="${quiz.name}">Quiz Name</li>
+                        <li class="breadcrumb-item active" th:text="${quiz.title}">Quiz Title</li>
                     </ol>
                 </nav>
             </div>
@@ -45,16 +45,16 @@
                         <tbody>
                             <tr th:each="question, loop : ${questions}">
                                 <th scope="row" th:text="${loop.index + 1}">1</th>
-                                <td th:text="${question.content}">Question content</td>
+                                <td th:text="${question.questionText}">Question content</td>
                                 <td>
                                     <span class="badge rounded-pill"
-                                          th:classappend="${question.difficultyLevel == T(codefusion.softwareproject1.Models.QuestionsClass.DifficultyLevel).EASY ? 'bg-success' : 
-                                                          (question.difficultyLevel == T(codefusion.softwareproject1.Models.QuestionsClass.DifficultyLevel).MEDIUM ? 'bg-warning' : 'bg-danger')}"
+                                          th:classappend="${question.difficultyLevel == T(codefusion.softwareproject1.entity.Question.DifficultyLevel).EASY ? 'bg-success' : 
+                                                          (question.difficultyLevel == T(codefusion.softwareproject1.entity.Question.DifficultyLevel).MEDIUM ? 'bg-warning' : 'bg-danger')}"
                                           th:text="${question.difficultyLevel}">
                                         Difficulty
                                     </span>
                                 </td>
-                                <td th:text="${question.choices != null ? question.choices.size() : 0}">4</td>
+                                <td th:text="${question.answerOptions != null ? question.answerOptions.size() : 0}">4</td>
                                 <td>
                                     <div class="btn-group" role="group">
                                         <a th:href="@{/quizzes/{quizId}/questions/{questionId}/edit(quizId=${quiz.id},questionId=${question.id})}" class="btn btn-sm btn-primary">Edit</a>
