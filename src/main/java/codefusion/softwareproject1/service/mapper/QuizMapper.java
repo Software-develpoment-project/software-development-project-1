@@ -21,6 +21,7 @@ public class QuizMapper implements EntityMapper<Quiz, QuizDTO> {
         dto.setId(entity.getId());
         dto.setTitle(entity.getTitle());
         dto.setDescription(entity.getDescription());
+        dto.setCourseCode(entity.getCourseCode());
         dto.setPublished(entity.isPublished());
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());
@@ -37,6 +38,7 @@ public class QuizMapper implements EntityMapper<Quiz, QuizDTO> {
         Quiz entity = new Quiz();
         entity.setTitle(dto.getTitle());
         entity.setDescription(dto.getDescription());
+        entity.setCourseCode(dto.getCourseCode());
         entity.setPublished(dto.isPublished());
         
         return entity;
@@ -54,6 +56,10 @@ public class QuizMapper implements EntityMapper<Quiz, QuizDTO> {
         
         if (dto.getDescription() != null) {
             entity.setDescription(dto.getDescription());
+        }
+        
+        if (dto.getCourseCode() != null) {
+            entity.setCourseCode(dto.getCourseCode());
         }
         
         if (dto.isPublished() != entity.isPublished()) {

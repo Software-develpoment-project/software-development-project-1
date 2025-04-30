@@ -3,7 +3,6 @@ import { getQuizById } from '../services/quizService';
 
 /**
  * Custom hook for fetching a single quiz by ID
- * Follows Single Responsibility Principle by focusing only on single quiz data fetching
  * 
  * @param {string|number} quizId - The ID of the quiz to fetch
  * @returns {Object} - Object containing quiz data, loading state, and error state
@@ -28,7 +27,6 @@ export const useQuiz = (quizId) => {
         const response = await getQuizById(quizId);
         setQuiz(response.data);
       } catch (error) {
-        console.error(`Error fetching quiz ${quizId}:`, error);
         setError(error.message || 'Failed to fetch quiz');
       } finally {
         setLoading(false);

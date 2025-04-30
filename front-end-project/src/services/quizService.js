@@ -30,11 +30,6 @@ const answerApi = createResourceApi('quizzes/answers');
 
 /**
  * Service for Quiz API operations.
- * Follows:
- * - Single Responsibility Principle: focuses only on quiz-related API calls.
- * - Open/Closed Principle: can be extended without modification.
- * - Interface Segregation Principle: separated into domain-specific interfaces.
- * - Dependency Inversion Principle: depends on abstractions (api module).
  */
 const quizService = {
   // Quiz management operations
@@ -44,7 +39,7 @@ const quizService = {
   ),
 
   getPublishedQuizzes: createApiHandler(
-    () => quizApi.findBy({ published: true }).then(data => Array.isArray(data) ? data.map(quiz => mapToFrontendModel(quiz, 'quiz')) : []), 
+    () => api.get('/published-quizzes').then(data => Array.isArray(data) ? data.map(quiz => mapToFrontendModel(quiz, 'quiz')) : []), 
     'Failed to fetch published quizzes'
   ),
 
@@ -57,7 +52,6 @@ const quizService = {
     (quizData) => {
       // Ensure data is properly mapped to backend expectations
       const mappedData = mapToBackendDTO(quizData, 'quiz');
-      console.log('QuizData being sent to API (after mapping):', JSON.stringify(mappedData));
       return quizApi.create(mappedData).then(quiz => mapToFrontendModel(quiz, 'quiz'));
     }, 
     'Failed to create quiz'
@@ -88,7 +82,6 @@ const quizService = {
   ),
 
   // Function aliases for backward compatibility
-  // These functions are called directly from AnswerOptionForm.jsx
   getQuestionAnswers: createApiHandler(
     (questionId) => api.get(`quizzes/questions/${questionId}/answers`), 
     (questionId) => `Failed to fetch answer options for question with ID ${questionId}`
@@ -116,10 +109,7 @@ const quizService = {
 
     getById: createApiHandler(
       (questionId) => api.get(`quizzes/questions/${questionId}`)
-        .then(question => {
-          console.log(`Raw question data from API for ID ${questionId}:`, question);
-          return mapToFrontendModel(question, 'question');
-        }),
+        .then(question => mapToFrontendModel(question, 'question')),
       (questionId) => `Failed to fetch question with ID ${questionId}`
     ),
 
@@ -162,65 +152,48 @@ const quizService = {
 // For backward compatibility with existing code
 export const fetchQuizzes = async () => {
   try {
-    const response = await axios.get(`${API_URL}/quizzes`);
-    return response.data;
+    return await quizService.getAllQuizzes();
   } catch (error) {
-    console.error('Error fetching quizzes:', error);
     throw new Error('Failed to fetch quizzes');
   }
 };
 
 export const createQuiz = async (quizData) => {
   try {
-    // Ensure data is properly mapped to backend expectations
-    const mappedData = mapToBackendDTO(quizData, 'quiz');
-    console.log('Standalone createQuiz - Data being sent to API:', JSON.stringify(mappedData));
-    
-    const response = await axios.post(`${API_URL}/quizzes`, mappedData);
-    return response.data;
+    return await quizService.createQuiz(quizData);
   } catch (error) {
-    console.error('Error creating quiz:', error);
     throw new Error('Failed to create quiz');
   }
 };
 
 export const updateQuiz = async (id, quizData) => {
   try {
-    // Ensure data is properly mapped to backend expectations
-    const mappedData = mapToBackendDTO(quizData, 'quiz');
-    console.log(`Standalone updateQuiz - Updating quiz ${id} with:`, JSON.stringify(mappedData));
-    
-    const response = await axios.put(`${API_URL}/quizzes/${id}`, mappedData);
-    return response.data;
+    return await quizService.updateQuiz(id, quizData);
   } catch (error) {
-    console.error(`Error updating quiz ${id}:`, error);
     throw new Error('Failed to update quiz');
   }
 };
 
 export const deleteQuiz = async (id) => {
   try {
-    await axios.delete(`${API_URL}/quizzes/${id}`);
+    await quizService.deleteQuiz(id);
   } catch (error) {
-    console.error(`Error deleting quiz ${id}:`, error);
     throw new Error('Failed to delete quiz');
   }
 };
 
 export const publishQuiz = async (id) => {
   try {
-    await axios.post(`${API_URL}/quizzes/${id}/publish`);
+    await quizService.publishQuiz(id);
   } catch (error) {
-    console.error(`Error publishing quiz ${id}:`, error);
     throw new Error('Failed to publish quiz');
   }
 };
 
 export const unpublishQuiz = async (id) => {
   try {
-    await axios.post(`${API_URL}/quizzes/${id}/unpublish`);
+    await quizService.unpublishQuiz(id);
   } catch (error) {
-    console.error(`Error unpublishing quiz ${id}:`, error);
     throw new Error('Failed to unpublish quiz');
   }
 };

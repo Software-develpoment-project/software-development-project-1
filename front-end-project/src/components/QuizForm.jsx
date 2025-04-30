@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Form, Button, Container, Alert, Spinner, Card } from 'react-bootstrap';
 import quizService from '../services/quizService';
-import { testDirectQuizCreation } from '../services/debug';
 
 const QuizForm = ({ 
   quiz = null, 
@@ -13,7 +13,9 @@ const QuizForm = ({
   // Default empty form state
   const [formData, setFormData] = useState({
     title: '',
-    description: ''
+    description: '',
+    courseCode: '',
+    published: false
   });
   
   const [loading, setLoading] = useState(false);
@@ -27,7 +29,9 @@ const QuizForm = ({
     if (quiz) {
       setFormData({
         title: quiz.title || '',
-        description: quiz.description || ''
+        description: quiz.description || '',
+        courseCode: quiz.courseCode || '',
+        published: quiz.published || false
       });
     }
   }, [quiz]);
@@ -47,15 +51,21 @@ const QuizForm = ({
       errors.description = 'Description must be less than 500 characters';
     }
     
+    if (formData.courseCode && formData.courseCode.length > 50) {
+      errors.courseCode = 'Course code must be less than 50 characters';
+    }
+    
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
   
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
+    const fieldValue = type === 'checkbox' ? checked : value;
+    
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: fieldValue
     }));
     
     // Clear validation error when user types
@@ -79,9 +89,6 @@ const QuizForm = ({
     setError(null);
     
     try {
-      // Log the form data right before submission
-      console.log('QuizForm - Data being submitted:', JSON.stringify(formData));
-      
       let result;
       
       if (onSubmit) {
@@ -99,7 +106,12 @@ const QuizForm = ({
       }
       
       // Reset form
-      setFormData({ title: '', description: '' });
+      setFormData({ 
+        title: '', 
+        description: '', 
+        courseCode: '', 
+        published: false 
+      });
       
       // Navigate back to quiz list
       navigate('/quizzes');
@@ -107,99 +119,119 @@ const QuizForm = ({
       return result;
     } catch (err) {
       setError('Failed to save quiz. Please try again.');
-      console.error('Error saving quiz:', err);
     } finally {
       setLoading(false);
     }
   };
   
-  // Debug function to test direct API call
-  const handleTestDirectCall = async () => {
-    try {
-      await testDirectQuizCreation();
-      alert('Direct API call succeeded! Check console for details.');
-    } catch (err) {
-      alert('Direct API call failed! Check console for details.');
-    }
-  };
-  
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">{title}</h1>
+    <Container className="py-4">
+      <h1 className="mb-4">{title}</h1>
       
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          <p>{error}</p>
-        </div>
+        <Alert variant="danger" className="mb-4">
+          {error}
+        </Alert>
       )}
       
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-            Title <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            className={`w-full p-2 border rounded ${validationErrors.title ? 'border-red-500' : 'border-gray-300'}`}
-            disabled={loading}
-            required
-          />
-          {validationErrors.title && (
-            <p className="mt-1 text-sm text-red-500">{validationErrors.title}</p>
-          )}
-        </div>
-        
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            rows="4"
-            className={`w-full p-2 border rounded ${validationErrors.description ? 'border-red-500' : 'border-gray-300'}`}
-            disabled={loading}
-          />
-          {validationErrors.description && (
-            <p className="mt-1 text-sm text-red-500">{validationErrors.description}</p>
-          )}
-        </div>
-        
-        <div className="flex justify-end space-x-3 pt-4">
-          <button
-            type="button"
-            onClick={() => navigate(cancelRoute)}
-            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-            disabled={loading}
-          >
-            Cancel
-          </button>
-          {process.env.NODE_ENV === 'development' && (
-            <button
-              type="button"
-              onClick={handleTestDirectCall}
-              className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
-              disabled={loading}
-            >
-              Test Direct API
-            </button>
-          )}
-          <button
-            type="submit"
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            disabled={loading}
-          >
-            {loading ? 'Saving...' : buttonLabel}
-          </button>
-        </div>
-      </form>
-    </div>
+      <Card>
+        <Card.Body>
+          <Form onSubmit={handleSubmit}>
+            <Form.Group className="mb-3" controlId="formTitle">
+              <Form.Label>
+                Title <span className="text-danger">*</span>
+              </Form.Label>
+              <Form.Control
+                type="text"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                isInvalid={!!validationErrors.title}
+                disabled={loading}
+                required
+              />
+              <Form.Control.Feedback type="invalid">
+                {validationErrors.title}
+              </Form.Control.Feedback>
+            </Form.Group>
+            
+            <Form.Group className="mb-3" controlId="formDescription">
+              <Form.Label>Description</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={4}
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                isInvalid={!!validationErrors.description}
+                disabled={loading}
+              />
+              <Form.Control.Feedback type="invalid">
+                {validationErrors.description}
+              </Form.Control.Feedback>
+            </Form.Group>
+            
+            <Form.Group className="mb-3" controlId="formCourseCode">
+              <Form.Label>Course Code</Form.Label>
+              <Form.Control
+                type="text"
+                name="courseCode"
+                value={formData.courseCode}
+                onChange={handleChange}
+                isInvalid={!!validationErrors.courseCode}
+                disabled={loading}
+              />
+              <Form.Control.Feedback type="invalid">
+                {validationErrors.courseCode}
+              </Form.Control.Feedback>
+            </Form.Group>
+            
+            <Form.Group className="mb-4" controlId="formPublished">
+              <Form.Check
+                type="checkbox"
+                label="Published"
+                name="published"
+                checked={formData.published}
+                onChange={handleChange}
+                disabled={loading}
+              />
+            </Form.Group>
+            
+            <div className="d-flex gap-2">
+              <Button
+                variant="secondary"
+                onClick={() => navigate(cancelRoute)}
+                disabled={loading}
+              >
+                Cancel
+              </Button>
+              
+              <Button
+                variant="primary"
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                      className="me-1"
+                    />
+                    Saving...
+                  </>
+                ) : (
+                  buttonLabel
+                )}
+              </Button>
+            </div>
+          </Form>
+        </Card.Body>
+      </Card>
+    </Container>
   );
 };
 

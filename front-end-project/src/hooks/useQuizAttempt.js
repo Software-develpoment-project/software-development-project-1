@@ -42,7 +42,6 @@ const useQuizAttempt = (quizId, attemptId) => {
         return null;
       }
     } catch (err) {
-      console.error('Error starting quiz attempt:', err);
       setError('Failed to start quiz attempt');
       return null;
     } finally {
@@ -76,7 +75,6 @@ const useQuizAttempt = (quizId, attemptId) => {
         return null;
       }
     } catch (err) {
-      console.error('Error loading quiz attempt:', err);
       setError('Failed to load quiz attempt');
       return null;
     } finally {
@@ -112,7 +110,6 @@ const useQuizAttempt = (quizId, attemptId) => {
         return null;
       }
     } catch (err) {
-      console.error('Error submitting answer:', err);
       setError('Failed to submit answer');
       return null;
     } finally {
@@ -141,7 +138,6 @@ const useQuizAttempt = (quizId, attemptId) => {
         return null;
       }
     } catch (err) {
-      console.error('Error completing quiz attempt:', err);
       setError('Failed to complete quiz attempt');
       return null;
     } finally {

@@ -10,15 +10,10 @@
  * @returns {string} A user-friendly error message
  */
 export const handleApiError = (error, defaultMessage = 'An error occurred') => {
-  console.error('API Error:', error);
-  
   if (error.response) {
     // The request was made and the server responded with a status code
     // that falls out of the range of 2xx
     const { status, data } = error.response;
-    
-    console.error(`Status: ${status}`);
-    console.error('Error data:', data);
     
     if (data && data.message) {
       return `Error: ${data.message}`;
@@ -49,7 +44,6 @@ export const handleApiError = (error, defaultMessage = 'An error occurred') => {
     }
   } else if (error.request) {
     // The request was made but no response was received
-    console.error('No response received from server');
     return 'No response from server. Please check your connection';
   }
   
@@ -85,7 +79,6 @@ export const createRequestConfig = (options = {}) => {
  * @returns {any} The processed response data
  */
 export const processResponse = (response) => {
-  console.log(`Response: ${response.status} from ${response.config.url}`);
   return response.data;
 };
 
@@ -120,14 +113,6 @@ export const mapToBackendDTO = (data, type = 'generic') => {
         delete mappedData.content;
       }
       break;
-      
-    case 'answer':
-      // Add answer-specific mappings here if needed
-      break;
-      
-    default:
-      // No specific mappings for other types
-      break;
   }
   
   return mappedData;
@@ -157,13 +142,6 @@ export const mapToFrontendModel = (data, type = 'generic') => {
       if (mappedData.questionText !== undefined && mappedData.content === undefined) {
         mappedData.content = mappedData.questionText;
       }
-      
-      // Debug the question data mapping
-      console.log('Question data being mapped to frontend:', mappedData);
-      break;
-      
-    default:
-      // No specific mappings for other types
       break;
   }
   

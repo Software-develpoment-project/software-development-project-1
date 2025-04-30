@@ -32,6 +32,10 @@ public class QuestionMapper implements EntityMapper<Question, QuestionDTO> {
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());
         
+        if (entity.getDifficultyLevel() != null) {
+            dto.setDifficultyLevel(entity.getDifficultyLevel().name());
+        }
+        
         if (entity.getQuiz() != null) {
             dto.setQuizId(entity.getQuiz().getId());
         }
@@ -47,6 +51,20 @@ public class QuestionMapper implements EntityMapper<Question, QuestionDTO> {
         
         Question entity = new Question();
         entity.setQuestionText(dto.getQuestionText());
+        
+        // Set difficulty level if provided
+        if (dto.getDifficultyLevel() != null) {
+            try {
+                if ("NORMAL".equals(dto.getDifficultyLevel())) {
+                    entity.setDifficultyLevel(Question.DifficultyLevel.MEDIUM);
+                } else {
+                    entity.setDifficultyLevel(Question.DifficultyLevel.valueOf(dto.getDifficultyLevel()));
+                }
+            } catch (IllegalArgumentException e) {
+                // Default to MEDIUM if the value is not recognized
+                entity.setDifficultyLevel(Question.DifficultyLevel.MEDIUM);
+            }
+        }
         
         // Set quiz if quizId is provided
         if (dto.getQuizId() != null) {
@@ -64,6 +82,20 @@ public class QuestionMapper implements EntityMapper<Question, QuestionDTO> {
         }
         
         entity.setQuestionText(dto.getQuestionText());
+        
+        // Update difficulty level if provided
+        if (dto.getDifficultyLevel() != null) {
+            try {
+                if ("NORMAL".equals(dto.getDifficultyLevel())) {
+                    entity.setDifficultyLevel(Question.DifficultyLevel.MEDIUM);
+                } else {
+                    entity.setDifficultyLevel(Question.DifficultyLevel.valueOf(dto.getDifficultyLevel()));
+                }
+            } catch (IllegalArgumentException e) {
+                // Default to MEDIUM if the value is not recognized
+                entity.setDifficultyLevel(Question.DifficultyLevel.MEDIUM);
+            }
+        }
         
         // Update quiz if quizId has changed
         if (dto.getQuizId() != null && 

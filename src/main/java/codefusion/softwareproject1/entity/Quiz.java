@@ -31,6 +31,9 @@ public class Quiz {
     
     @Column(name = "description")
     private String description;
+    
+    @Column(name = "course_code", length = 50)
+    private String courseCode;
 
     public enum Difficulty {
         EASY, MEDIUM, HARD

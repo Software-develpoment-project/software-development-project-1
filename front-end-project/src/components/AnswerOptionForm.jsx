@@ -1,15 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Table, Button, Badge, Form, Container, Alert, Card, Spinner } from 'react-bootstrap';
 import quizService from '../services/quizService';
-
-// Debug: Check if the functions exist in quizService
-console.log('quizService functions available:', {
-  getQuestionAnswers: typeof quizService.getQuestionAnswers === 'function',
-  createAnswerOption: typeof quizService.createAnswerOption === 'function',
-  deleteAnswerOption: typeof quizService.deleteAnswerOption === 'function',
-  answerOptions: quizService.answerOptions,
-  fullQuizService: quizService
-});
 
 const AnswerOptionForm = ({
   questionId,
@@ -21,7 +13,7 @@ const AnswerOptionForm = ({
 }) => {
   // Default form state
   const [formData, setFormData] = useState({
-    answerText: '',
+    text: '',
     correct: false,
     questionId: questionId
   });
@@ -41,24 +33,9 @@ const AnswerOptionForm = ({
     const fetchAnswerOptions = async () => {
       try {
         setListLoading(true);
-        let data;
-        
-        // Try direct function first
-        try {
-          console.log("Attempting to use quizService.getQuestionAnswers");
-          data = await quizService.getQuestionAnswers(questionId);
-        } catch (primaryError) {
-          console.error("Primary function failed:", primaryError);
-          
-          // Fallback to nested function
-          console.log("Attempting to use quizService.answerOptions.getByQuestionId");
-          data = await quizService.answerOptions.getByQuestionId(questionId);
-        }
-        
-        console.log("Answer options data retrieved:", data);
+        const data = await quizService.answerOptions.getByQuestionId(questionId);
         setAnswerOptions(data);
       } catch (err) {
-        console.error('Error fetching answer options:', err);
         setError('Failed to load existing answer options.');
       } finally {
         setListLoading(false);
@@ -72,7 +49,7 @@ const AnswerOptionForm = ({
   useEffect(() => {
     if (answerOption) {
       setFormData({
-        answerText: answerOption.text || '',
+        text: answerOption.text || '',
         correct: answerOption.correct || false,
         questionId
       });
@@ -82,12 +59,12 @@ const AnswerOptionForm = ({
   const validate = () => {
     const errors = {};
     
-    if (!formData.answerText.trim()) {
-      errors.answerText = 'Answer answerText is required';
-    } else if (formData.answerText.length < 1) {
-      errors.answerText = 'Answer answerText must not be empty';
-    } else if (formData.answerText.length > 255) {
-      errors.answerText = 'Answer text must be less than 255 characters';
+    if (!formData.text.trim()) {
+      errors.text = 'Answer text is required';
+    } else if (formData.text.length < 1) {
+      errors.text = 'Answer text must not be empty';
+    } else if (formData.text.length > 255) {
+      errors.text = 'Answer text must be less than 255 characters';
     }
     
     // Check if we're already at the maximum of 4 answers
@@ -127,28 +104,23 @@ const AnswerOptionForm = ({
     setError(null);
     
     try {
-    
-
-          // Create new answer option
-          let result;
-          
-          // Try direct function first
-         
-            console.log("Attempting to use quizService.createAnswerOption");
-            
-            result = await quizService.createAnswerOption(questionId, formData);
-         
-          
-          console.log("Answer option created:", result);
-          
-          // Add to list
-          setAnswerOptions([...answerOptions, result]);
-        
-      }
+      let result;
+      
+      // Create the payload with correct field name for backend DTO
+      const payload = {
+        answerText: formData.text, // Map 'text' to 'answerText' for backend compatibility
+        correct: formData.correct,
+        questionId: formData.questionId
+      };
+      
+      result = await quizService.answerOptions.create(questionId, payload);
+      
+      // Add to list
+      setAnswerOptions([...answerOptions, result]);
       
       // Reset form
       setFormData({
-        answerText: '',
+        text: '',
         correct: false,
         questionId
       });
@@ -156,145 +128,162 @@ const AnswerOptionForm = ({
       return result;
     } catch (err) {
       setError('Failed to save answer option. Please try again.');
-      console.error('Error saving answer option:', err);
     } finally {
       setLoading(false);
     }
   };
   
-  const handleDeleteAnswerOption = async (id) => {
+  const handleDeleteAnswerOption = async (id, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (window.confirm('Are you sure you want to delete this answer option?')) {
       try {
-        // Try direct function first
-        try {
-          console.log("Attempting to use quizService.deleteAnswerOption");
-          await quizService.deleteAnswerOption(id);
-        } catch (primaryError) {
-          console.error("Primary function failed:", primaryError);
-          
-          // Fallback to nested function
-          console.log("Attempting to use quizService.answerOptions.delete");
-          await quizService.answerOptions.delete(id);
-        }
-        
-        console.log("Answer option deleted:", id);
+        await quizService.answerOptions.delete(id);
         setAnswerOptions(answerOptions.filter(option => option.id !== id));
       } catch (err) {
         setError('Failed to delete answer option. Please try again.');
-        console.error('Error deleting answer option:', err);
       }
     }
   };
   
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">{title}</h1>
+    <Container className="py-4">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h1>{title}</h1>
+        <Button
+          variant="secondary"
+          onClick={() => navigate(cancelRoute || defaultCancelRoute)}
+        >
+          Back to Questions
+        </Button>
+      </div>
       
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          <p>{error}</p>
-        </div>
+        <Alert variant="danger" className="mb-4">
+          {error}
+        </Alert>
       )}
       
       {validationErrors.general && (
-        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
-          <p>{validationErrors.general}</p>
-        </div>
+        <Alert variant="warning" className="mb-4">
+          {validationErrors.general}
+        </Alert>
       )}
       
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-4">Current Answer Options</h2>
-        
-        {listLoading ? (
-          <p>Loading answer options...</p>
-        ) : answerOptions.length === 0 ? (
-          <p className="text-gray-500 italic">No answer options yet. Add one below.</p>
-        ) : (
-          <div className="space-y-3">
-            {answerOptions.map(option => (
-              <div 
-                key={option.id} 
-                className={`border rounded-lg p-3 flex justify-between items-center ${
-                  option.correct ? 'bg-green-50 border-green-200' : 'bg-white'
-                }`}
-              >
-                <div className="flex items-center">
-                  <span className={`inline-block w-4 h-4 rounded-full mr-3 ${
-                    option.correct ? 'bg-green-500' : 'bg-gray-300'
-                  }`}></span>
-                  <span>{option.text}</span>
-                </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => handleDeleteAnswerOption(option.id)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <Card className="mb-4">
+        <Card.Header>
+          <h2 className="mb-0">Current Answer Options</h2>
+        </Card.Header>
+        <Card.Body>
+          {listLoading ? (
+            <div className="text-center py-3">
+              <Spinner animation="border" role="status">
+                <span className="visually-hidden">Loading answer options...</span>
+              </Spinner>
+            </div>
+          ) : answerOptions.length === 0 ? (
+            <p className="text-muted fst-italic">No answer options yet. Add one below.</p>
+          ) : (
+            <Table responsive striped hover>
+              <thead>
+                <tr>
+                  <th>Answer option text</th>
+                  <th>Correctness</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {answerOptions.map(option => (
+                  <tr key={option.id}>
+                    <td>{option.text || option.answerText}</td>
+                    <td>
+                      <Badge 
+                        bg={option.correct ? 'success' : 'danger'} 
+                        pill
+                      >
+                        {option.correct ? 'Correct' : 'Not correct'}
+                      </Badge>
+                    </td>
+                    <td>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={(e) => handleDeleteAnswerOption(option.id, e)}
+                      >
+                        Delete
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
+        </Card.Body>
+      </Card>
       
-      <div className="border-t pt-6">
-        <h2 className="text-lg font-semibold mb-4">Add New Answer Option</h2>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="text" className="block text-sm font-medium text-gray-700 mb-1">
-              Answer Text <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="text"
-              name="text"
-              value={formData.text}
-              onChange={handleChange}
-              className={`w-full p-2 border rounded ${validationErrors.text ? 'border-red-500' : 'border-gray-300'}`}
-              disabled={loading || answerOptions.length >= 4}
-              required
-            />
-            {validationErrors.text && (
-              <p className="mt-1 text-sm text-red-500">{validationErrors.text}</p>
-            )}
-          </div>
-          
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="correct"
-              name="correct"
-              checked={formData.correct}
-              onChange={handleChange}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              disabled={loading || answerOptions.length >= 4}
-            />
-            <label htmlFor="correct" className="ml-2 block text-sm text-gray-700">
-              This is the correct answer
-            </label>
-          </div>
-          
-          <div className="flex justify-between pt-4">
-            <button
-              type="button"
-              onClick={() => navigate(cancelRoute || defaultCancelRoute)}
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-            >
-              Back
-            </button>
-            <button
-              type="submit"
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-              disabled={loading || answerOptions.length >= 4}
-            >
-              {loading ? 'Saving...' : buttonLabel}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      <Card>
+        <Card.Header>
+          <h2 className="mb-0">Add New Answer Option</h2>
+        </Card.Header>
+        <Card.Body>
+          <Form onSubmit={handleSubmit}>
+            <Form.Group className="mb-3" controlId="formAnswerText">
+              <Form.Label>
+                Answer Text <span className="text-danger">*</span>
+              </Form.Label>
+              <Form.Control
+                type="text"
+                name="text"
+                value={formData.text}
+                onChange={handleChange}
+                isInvalid={!!validationErrors.text}
+                disabled={loading || answerOptions.length >= 4}
+                required
+              />
+              <Form.Control.Feedback type="invalid">
+                {validationErrors.text}
+              </Form.Control.Feedback>
+            </Form.Group>
+            
+            <Form.Group className="mb-3" controlId="formCorrect">
+              <Form.Check
+                type="checkbox"
+                label="This is the correct answer"
+                name="correct"
+                checked={formData.correct}
+                onChange={handleChange}
+                disabled={loading || answerOptions.length >= 4}
+              />
+            </Form.Group>
+            
+            <div className="d-flex justify-content-end gap-2">
+              <Button
+                variant="primary"
+                type="submit"
+                disabled={loading || answerOptions.length >= 4}
+              >
+                {loading ? (
+                  <>
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                      className="me-1"
+                    />
+                    Saving...
+                  </>
+                ) : (
+                  buttonLabel
+                )}
+              </Button>
+            </div>
+          </Form>
+        </Card.Body>
+      </Card>
+    </Container>
   );
 };
 

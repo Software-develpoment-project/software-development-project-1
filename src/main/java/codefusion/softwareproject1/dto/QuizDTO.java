@@ -20,6 +20,9 @@ public class QuizDTO {
     
     private String description;
     
+    @Size(max = 50, message = "Course code must be less than 50 characters")
+    private String courseCode;
+    
     private boolean published;
     
     private Date createdAt;

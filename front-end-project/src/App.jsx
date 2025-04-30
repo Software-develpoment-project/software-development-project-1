@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Container, Button, Alert } from 'react-bootstrap';
 import Layout from './components/Layout';
 import QuizList from './pages/QuizList';
 import QuizDetail from './pages/QuizDetail';
@@ -37,16 +38,18 @@ function App() {
           
           {/* Catch all for invalid routes */}
           <Route path="*" element={
-            <div className="p-4 text-center">
-              <h1 className="text-2xl font-bold mb-4">Page Not Found</h1>
-              <p className="mb-4">The page you're looking for doesn't exist.</p>
-              <a 
-                href="/quizzes" 
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            <Container className="text-center py-5">
+              <h1 className="mb-4">Page Not Found</h1>
+              <Alert variant="warning" className="mb-4">
+                The page you're looking for doesn't exist.
+              </Alert>
+              <Button 
+                variant="primary"
+                href="/quizzes"
               >
                 Back to Quizzes
-              </a>
-            </div>
+              </Button>
+            </Container>
           } />
         </Routes>
       </Layout>

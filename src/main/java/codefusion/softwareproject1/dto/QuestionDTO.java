@@ -22,6 +22,8 @@ public class QuestionDTO {
     @NotNull(message = "Quiz ID is required")
     private Long quizId;
     
+    private String difficultyLevel;
+    
     private Date createdAt;
     
     private Date updatedAt;

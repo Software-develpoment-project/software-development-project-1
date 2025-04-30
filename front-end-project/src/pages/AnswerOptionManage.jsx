@@ -25,13 +25,9 @@ const AnswerOptionManage = () => {
         // Fetch the question data which includes its quizId
         const questionData = await quizService.questions.getById(questionId);
         
-        console.log(`Question data retrieved for ID ${questionId}:`, questionData);
-        
         if (!questionData) {
           throw new Error(`Question with ID ${questionId} not found`);
         }
-        
-        console.log(`Quiz ID from question:`, questionData.quizId);
         
         if (!questionData.quizId) {
           throw new Error('Question data is missing quizId reference');
@@ -40,7 +36,6 @@ const AnswerOptionManage = () => {
         setQuestion(questionData);
         setError(null);
       } catch (err) {
-        console.error('Error fetching question data:', err);
         setError('Failed to load question data. Please try again later.');
       } finally {
         setLoading(false);

@@ -3,10 +3,6 @@ import quizService from '../services/quizService';
 
 /**
  * Custom hook for fetching quizzes
- * Follows:
- * - Single Responsibility Principle by focusing only on quiz data fetching
- * - Interface Segregation Principle by clearly defining inputs and outputs
- * - Dependency Inversion Principle by depending on service abstractions
  * 
  * @param {Object} options - Hook configuration options
  * @param {boolean} options.onlyPublished - Whether to fetch only published quizzes
@@ -30,7 +26,6 @@ export const useQuizzes = ({ onlyPublished = false, dependencies = [] } = {}) =>
       
       setQuizzes(data);
     } catch (error) {
-      console.error('Error in useQuizzes hook:', error);
       setError(error.message || 'Failed to fetch quizzes');
     } finally {
       setLoading(false);
@@ -41,7 +36,6 @@ export const useQuizzes = ({ onlyPublished = false, dependencies = [] } = {}) =>
     fetchQuizzes();
   }, [onlyPublished, ...dependencies]);
 
-  // Return quizzes data, loading state, error state, and refetch function
   return { 
     quizzes, 
     loading, 

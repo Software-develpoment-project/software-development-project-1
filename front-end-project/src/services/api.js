@@ -21,33 +21,16 @@ const createApiClient = (options = {}) => {
   // Request interceptor
   client.interceptors.request.use(
     (config) => {
-      console.log(`Request: ${config.method.toUpperCase()} ${config.url}`);
-      
-      // Inspect data payload for POST and PUT requests
+      // Ensure content type is set correctly
       if ((config.method === 'post' || config.method === 'put') && config.data) {
-        // Log the raw data object
-        console.log('Request payload (object):', config.data);
-        
-        // Log the stringified data to see exactly what's being sent
-        console.log('Request payload (stringified):', JSON.stringify(config.data));
-        
-        // Check if title field exists specifically
-        if (typeof config.data === 'object') {
-          console.log('Title field present:', 'title' in config.data);
-          console.log('Title value:', config.data.title);
-          
-          // Make sure the content type is set correctly
-          if (!config.headers['Content-Type']) {
-            config.headers['Content-Type'] = 'application/json';
-            console.log('Setting Content-Type header to application/json');
-          }
+        if (typeof config.data === 'object' && !config.headers['Content-Type']) {
+          config.headers['Content-Type'] = 'application/json';
         }
       }
       
       return config;
     },
     (error) => {
-      console.error('Request error:', error);
       return Promise.reject(error);
     }
   );
@@ -68,7 +51,6 @@ const createApiClient = (options = {}) => {
 
 /**
  * Main API client for general use
- * Follows Single Responsibility Principle by centralizing API configuration.
  */
 const api = createApiClient();
 
@@ -84,10 +66,7 @@ export const createResourceApi = (resource) => {
   return {
     getAll: () => api.get(resourcePath),
     getById: (id) => api.get(`${resourcePath}/${id}`),
-    create: (data) => {
-      console.log(`API Request to ${resourcePath}:`, data);
-      return api.post(resourcePath, data);
-    },
+    create: (data) => api.post(resourcePath, data),
     update: (id, data) => api.put(`${resourcePath}/${id}`, data),
     delete: (id) => api.delete(`${resourcePath}/${id}`),
     

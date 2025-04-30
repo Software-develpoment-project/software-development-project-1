@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Table, Button, Badge, Container, Spinner } from 'react-bootstrap';
 import quizService from '../services/quizService';
 
 const QuizList = () => {
@@ -41,82 +42,97 @@ const QuizList = () => {
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-64"><p>Loading quizzes...</p></div>;
+    return (
+      <Container className="d-flex justify-content-center align-items-center" style={{ height: '200px' }}>
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading quizzes...</span>
+        </Spinner>
+      </Container>
+    );
   }
 
   if (error) {
     return (
-      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-        <p>{error}</p>
-        <button 
-          onClick={() => window.location.reload()} 
-          className="mt-2 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
-
-  if (quizzes.length === 0) {
-    return (
-      <div className="p-4">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Quizzes</h1>
-          <Link to="/quizzes/new" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            Create New Quiz
-          </Link>
+      <Container className="mt-4">
+        <div className="alert alert-danger" role="alert">
+          <p>{error}</p>
+          <Button 
+            variant="outline-danger" 
+            onClick={() => window.location.reload()} 
+            className="mt-2"
+          >
+            Retry
+          </Button>
         </div>
-        <p className="text-gray-500">No quizzes available. Create a new one to get started!</p>
-      </div>
+      </Container>
     );
   }
 
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Quizzes</h1>
-        <Link to="/quizzes/new" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+    <Container className="mt-4">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h1>Quizzes</h1>
+        <Button as={Link} to="/quizzes/new" variant="primary">
           Create New Quiz
-        </Link>
+        </Button>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {quizzes.map(quiz => (
-          <div 
-            key={quiz.id} 
-            className="border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow"
-          >
-            <Link to={`/quizzes/${quiz.id}`} className="block">
-              <div className="p-4">
-                <h2 className="text-xl font-semibold mb-2">{quiz.title}</h2>
-                <p className="text-gray-600">{quiz.description || 'No description provided'}</p>
-                <div className="flex justify-between items-center mt-4">
-                  <span className="text-sm text-gray-500">
-                    {quiz.createdAt ? new Date(quiz.createdAt).toLocaleDateString() : 'Date unknown'}
-                  </span>
-                  <div className="flex space-x-2">
-                    <Link 
-                      to={`/quizzes/${quiz.id}/edit`} 
-                      className="text-blue-500 hover:text-blue-700"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      Edit
-                    </Link>
-                    <button 
-                      onClick={(e) => handleDeleteQuiz(quiz.id, e)} 
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          </div>
-        ))}
-      </div>
-    </div>
+      {quizzes.length === 0 ? (
+        <p className="text-muted">No quizzes available. Create a new one to get started!</p>
+      ) : (
+        <Table responsive striped hover>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Course Code</th>
+              <th>Published</th>
+              <th>Added on</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {quizzes.map(quiz => (
+              <tr key={quiz.id}>
+                <td>
+                  <Link to={`/quizzes/${quiz.id}`}>
+                    {quiz.title}
+                  </Link>
+                </td>
+                <td>{quiz.description || 'No description provided'}</td>
+                <td>{quiz.courseCode || 'N/A'}</td>
+                <td>
+                  <Badge bg={quiz.published ? 'success' : 'secondary'} pill>
+                    {quiz.published ? 'Published' : 'Not published'}
+                  </Badge>
+                </td>
+                <td>
+                  {quiz.createdAt ? new Date(quiz.createdAt).toLocaleDateString() : 'Date unknown'}
+                </td>
+                <td>
+                  <Button 
+                    as={Link} 
+                    to={`/quizzes/${quiz.id}/edit`} 
+                    variant="warning" 
+                    size="sm" 
+                    className="me-2"
+                  >
+                    Edit
+                  </Button>
+                  <Button 
+                    variant="danger" 
+                    size="sm"
+                    onClick={(e) => handleDeleteQuiz(quiz.id, e)}
+                  >
+                    Delete
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      )}
+    </Container>
   );
 };
 
