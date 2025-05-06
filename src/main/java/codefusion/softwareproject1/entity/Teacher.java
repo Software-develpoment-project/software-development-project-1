@@ -30,4 +30,8 @@ public class Teacher {
     
     @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL)
     private List<Quiz> quizzes;
-} 
+
+    
+    @OneToMany(mappedBy = "teacher")
+    private List<Category> categories;
+}

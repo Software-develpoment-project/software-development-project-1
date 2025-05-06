@@ -16,8 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@Controller
-@RequestMapping("/quizzes")
+
 public class QuizController {
 
     @Autowired

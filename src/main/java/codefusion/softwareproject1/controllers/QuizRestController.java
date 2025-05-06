@@ -3,7 +3,9 @@ package codefusion.softwareproject1.controllers;
 import codefusion.softwareproject1.dto.AnswerOptionDTO;
 import codefusion.softwareproject1.dto.QuestionDTO;
 import codefusion.softwareproject1.dto.QuizDTO;
+import codefusion.softwareproject1.exception.ResourceNotFoundException;
 import codefusion.softwareproject1.service.AnswerOptionService;
+import codefusion.softwareproject1.service.CategoryService;
 import codefusion.softwareproject1.service.QuestionService;
 import codefusion.softwareproject1.service.QuizService;
 import jakarta.validation.Valid;
@@ -26,12 +28,14 @@ public class QuizRestController {
     private final QuizService quizService;
     private final QuestionService questionService;
     private final AnswerOptionService answerOptionService;
+    private final CategoryService categoryService;
 
     @Autowired
     public QuizRestController(
             QuizService quizService,
             QuestionService questionService,
-            AnswerOptionService answerOptionService) {
+            AnswerOptionService answerOptionService,CategoryService categoryService) {
+        this.categoryService = categoryService;
         this.quizService = quizService;
         this.questionService = questionService;
         this.answerOptionService = answerOptionService;
@@ -53,8 +57,9 @@ public class QuizRestController {
 
     @GetMapping("/{id}")
     public ResponseEntity<QuizDTO> getQuizById(@PathVariable Long id) {
-        QuizDTO quiz = quizService.getQuizById(id);
+        QuizDTO quiz = quizService.getQuizById(id) ;
         return new ResponseEntity<>(quiz, HttpStatus.OK);
+        
     }
 
     @PutMapping("/{id}")
@@ -62,7 +67,7 @@ public class QuizRestController {
             @PathVariable Long id,
             @Valid @RequestBody QuizDTO quizDTO) {
         QuizDTO updatedQuiz = quizService.updateQuiz(id, quizDTO);
-        return new ResponseEntity<>(updatedQuiz, HttpStatus.OK);
+        return new ResponseEntity<>(updatedQuiz, HttpStatus.OK) ;
     }
 
     @DeleteMapping("/{id}")
