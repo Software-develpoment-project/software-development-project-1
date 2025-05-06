@@ -53,8 +53,7 @@ const QuizEdit = () => {
         <p>Quiz not found</p>
         <button 
           onClick={() => navigate('/quizzes')} 
-          className="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
-        >
+          className="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded">
           Back to Quizzes
         </button>
       </div>
