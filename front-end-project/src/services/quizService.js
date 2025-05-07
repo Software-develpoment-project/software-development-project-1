@@ -1,8 +1,8 @@
-import api, { createResourceApi } from './api';
+import { api, createResourceApi } from './api';
 import { handleApiError, mapToBackendDTO, mapToFrontendModel } from './apiUtils';
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'; // Consider using API_BASE_URL from api.js as the single source of truth
 
 /**
  * Create a standardized API request handler with error handling
@@ -146,55 +146,6 @@ const quizService = {
       (answerId) => answerApi.delete(answerId), 
       (answerId) => `Failed to delete answer option with ID ${answerId}`
     )
-  }
-};
-
-// For backward compatibility with existing code
-export const fetchQuizzes = async () => {
-  try {
-    return await quizService.getAllQuizzes();
-  } catch (error) {
-    throw new Error('Failed to fetch quizzes');
-  }
-};
-
-export const createQuiz = async (quizData) => {
-  try {
-    return await quizService.createQuiz(quizData);
-  } catch (error) {
-    throw new Error('Failed to create quiz');
-  }
-};
-
-export const updateQuiz = async (id, quizData) => {
-  try {
-    return await quizService.updateQuiz(id, quizData);
-  } catch (error) {
-    throw new Error('Failed to update quiz');
-  }
-};
-
-export const deleteQuiz = async (id) => {
-  try {
-    await quizService.deleteQuiz(id);
-  } catch (error) {
-    throw new Error('Failed to delete quiz');
-  }
-};
-
-export const publishQuiz = async (id) => {
-  try {
-    await quizService.publishQuiz(id);
-  } catch (error) {
-    throw new Error('Failed to publish quiz');
-  }
-};
-
-export const unpublishQuiz = async (id) => {
-  try {
-    await quizService.unpublishQuiz(id);
-  } catch (error) {
-    throw new Error('Failed to unpublish quiz');
   }
 };
 

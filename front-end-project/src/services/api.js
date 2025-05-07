@@ -79,4 +79,4 @@ export const createResourceApi = (resource) => {
   };
 };
 
-export default api; 
+export { api }; // Export the created api instance for use by other services 
