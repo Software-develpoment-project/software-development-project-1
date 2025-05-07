@@ -1,12 +1,1 @@
-@import "bootstrap/dist/css/bootstrap.min.css";
 @import "tailwindcss";
-
-/* Base styling - lighter reset that won't conflict with Bootstrap */
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  min-height: 100vh;
-}
-
-/* Remove conflicting Tailwind base styles that affect Bootstrap components */
-/* The styles below are intentionally removed to allow Bootstrap to work properly */

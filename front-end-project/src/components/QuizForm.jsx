@@ -1,16 +1,28 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Form, Button, Container, Alert, Spinner, Card } from 'react-bootstrap';
+import {
+  TextField,
+  Button,
+  Container,
+  Alert,
+  CircularProgress,
+  Paper,
+  Typography,
+  Checkbox,
+  FormControlLabel,
+  Box,
+  Stack,
+  Grid
+} from '@mui/material';
 import quizService from '../services/quizService';
 
 const QuizForm = ({ 
   quiz = null, 
   onSubmit = null,
-  title = 'Quiz Form',
+  // title prop is now typically handled by the parent page component
   buttonLabel = 'Submit',
   cancelRoute = '/quizzes'
 }) => {
-  // Default empty form state
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -24,7 +36,6 @@ const QuizForm = ({
   
   const navigate = useNavigate();
   
-  // If quiz is provided, prefill the form (used in edit mode)
   useEffect(() => {
     if (quiz) {
       setFormData({
@@ -38,23 +49,16 @@ const QuizForm = ({
   
   const validate = () => {
     const errors = {};
-    
-    if (!formData.title.trim()) {
-      errors.title = 'Title is required';
-    } else if (formData.title.length < 3) {
-      errors.title = 'Title must be at least 3 characters';
-    } else if (formData.title.length > 100) {
-      errors.title = 'Title must be less than 100 characters';
-    }
+    if (!formData.title.trim()) errors.title = 'Title is required';
+    else if (formData.title.length < 3) errors.title = 'Title must be at least 3 characters';
+    else if (formData.title.length > 100) errors.title = 'Title must be less than 100 characters';
     
     if (formData.description && formData.description.length > 500) {
       errors.description = 'Description must be less than 500 characters';
     }
-    
     if (formData.courseCode && formData.courseCode.length > 50) {
       errors.courseCode = 'Course code must be less than 50 characters';
     }
-    
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -62,176 +66,124 @@ const QuizForm = ({
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     const fieldValue = type === 'checkbox' ? checked : value;
-    
-    setFormData(prev => ({
-      ...prev,
-      [name]: fieldValue
-    }));
-    
-    // Clear validation error when user types
+    setFormData(prev => ({ ...prev, [name]: fieldValue }));
     if (validationErrors[name]) {
-      setValidationErrors(prev => ({
-        ...prev,
-        [name]: null
-      }));
+      setValidationErrors(prev => ({ ...prev, [name]: null }));
     }
   };
   
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate form
-    if (!validate()) {
-      return;
-    }
+    if (!validate()) return;
     
     setLoading(true);
     setError(null);
     
     try {
       let result;
-      
+      const payload = { ...formData }; // Ensure we send the current form data
+
       if (onSubmit) {
-        // If an onSubmit handler is provided, use it
-        result = await onSubmit(formData);
+        result = await onSubmit(payload);
       } else {
-        // Otherwise use default submit behavior
-        if (quiz) {
-          // Update mode
-          result = await quizService.updateQuiz(quiz.id, formData);
+        if (quiz && quiz.id) {
+          result = await quizService.updateQuiz(quiz.id, payload);
         } else {
-          // Create mode
-          result = await quizService.createQuiz(formData);
+          result = await quizService.createQuiz(payload);
         }
       }
-      
-      // Reset form
-      setFormData({ 
-        title: '', 
-        description: '', 
-        courseCode: '', 
-        published: false 
-      });
-      
-      // Navigate back to quiz list
-      navigate('/quizzes');
-      
-      return result;
+      // Navigate after successful submission
+      // Parent component might handle navigation if onSubmit is provided and returns a specific signal
+      if (!onSubmit || (result && result.id)) { // Basic check, adjust if onSubmit has different success criteria
+         navigate(quiz && quiz.id ? `/quizzes/${quiz.id}` : '/quizzes');
+      }
     } catch (err) {
-      setError('Failed to save quiz. Please try again.');
+      console.error('Quiz form submission error:', err);
+      setError(err.message || 'Failed to save quiz. Please try again.');
     } finally {
       setLoading(false);
     }
   };
   
   return (
-    <Container className="py-4">
-      <h1 className="mb-4">{title}</h1>
-      
+    <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
       {error && (
-        <Alert variant="danger" className="mb-4">
+        <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
-      
-      <Card>
-        <Card.Body>
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3" controlId="formTitle">
-              <Form.Label>
-                Title <span className="text-danger">*</span>
-              </Form.Label>
-              <Form.Control
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                isInvalid={!!validationErrors.title}
-                disabled={loading}
-                required
-              />
-              <Form.Control.Feedback type="invalid">
-                {validationErrors.title}
-              </Form.Control.Feedback>
-            </Form.Group>
-            
-            <Form.Group className="mb-3" controlId="formDescription">
-              <Form.Label>Description</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={4}
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                isInvalid={!!validationErrors.description}
-                disabled={loading}
-              />
-              <Form.Control.Feedback type="invalid">
-                {validationErrors.description}
-              </Form.Control.Feedback>
-            </Form.Group>
-            
-            <Form.Group className="mb-3" controlId="formCourseCode">
-              <Form.Label>Course Code</Form.Label>
-              <Form.Control
-                type="text"
-                name="courseCode"
-                value={formData.courseCode}
-                onChange={handleChange}
-                isInvalid={!!validationErrors.courseCode}
-                disabled={loading}
-              />
-              <Form.Control.Feedback type="invalid">
-                {validationErrors.courseCode}
-              </Form.Control.Feedback>
-            </Form.Group>
-            
-            <Form.Group className="mb-4" controlId="formPublished">
-              <Form.Check
-                type="checkbox"
-                label="Published"
-                name="published"
-                checked={formData.published}
-                onChange={handleChange}
-                disabled={loading}
-              />
-            </Form.Group>
-            
-            <div className="d-flex gap-2">
-              <Button
-                variant="secondary"
-                onClick={() => navigate(cancelRoute)}
-                disabled={loading}
-              >
-                Cancel
-              </Button>
-              
-              <Button
-                variant="primary"
-                type="submit"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Spinner
-                      as="span"
-                      animation="border"
-                      size="sm"
-                      role="status"
-                      aria-hidden="true"
-                      className="me-1"
-                    />
-                    Saving...
-                  </>
-                ) : (
-                  buttonLabel
-                )}
-              </Button>
-            </div>
-          </Form>
-        </Card.Body>
-      </Card>
-    </Container>
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <TextField
+            name="title"
+            label="Title"
+            value={formData.title}
+            onChange={handleChange}
+            error={!!validationErrors.title}
+            helperText={validationErrors.title}
+            disabled={loading}
+            required
+            fullWidth
+            autoFocus
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            name="description"
+            label="Description"
+            multiline
+            rows={4}
+            value={formData.description}
+            onChange={handleChange}
+            error={!!validationErrors.description}
+            helperText={validationErrors.description}
+            disabled={loading}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            name="courseCode"
+            label="Course Code"
+            value={formData.courseCode}
+            onChange={handleChange}
+            error={!!validationErrors.courseCode}
+            helperText={validationErrors.courseCode}
+            disabled={loading}
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <FormControlLabel
+            control={<Checkbox 
+                        name="published" 
+                        checked={formData.published} 
+                        onChange={handleChange} 
+                        disabled={loading} 
+                      />}
+            label="Published"
+            sx={{ justifyContent: 'flex-start', width: '100%', mt:1 }} // Adjust alignment if needed
+          />
+        </Grid>
+      </Grid>
+      <Stack direction="row" spacing={2} sx={{ mt: 3, justifyContent: 'flex-end' }}>
+        <Button
+          variant="outlined"
+          onClick={() => navigate(cancelRoute)}
+          disabled={loading}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          type="submit"
+          disabled={loading}
+          startIcon={loading ? <CircularProgress size={20} /> : null}
+        >
+          {loading ? 'Saving...' : buttonLabel}
+        </Button>
+      </Stack>
+    </Box>
   );
 };
 

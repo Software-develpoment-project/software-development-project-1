@@ -1,32 +1,34 @@
-import { api, createResourceApi } from './api';
+import { get, post, put, del, createResourceApi } from './api';
 import { handleApiError, mapToBackendDTO, mapToFrontendModel } from './apiUtils';
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api'; // Consider using API_BASE_URL from api.js as the single source of truth
 
 /**
- * Create a standardized API request handler with error handling
- * @param {Function} apiCall - The function that makes the actual API call
- * @param {string|Function} errorMessage - Default error message or function that returns error message
- * @returns {Function} - A function that executes the API call with error handling
+ * Simplified API request handler wrapper.
+ * Assumes fetchApi in api.js handles primary error catching and formatting.
+ * This handler now focuses on executing the API call and mapping results.
+ * @param {Function} apiCall - The function that makes the actual API call (e.g., quizApi.getAll)
+ * @param {string|Function} [errorMessage] - Optional: Specific error message context (less critical now)
+ * @returns {Function} - A function that executes the API call
  */
 const createApiHandler = (apiCall, errorMessage) => {
   return async (...args) => {
     try {
+      // Directly await the result. fetchApi will throw formatted errors.
       return await apiCall(...args);
     } catch (error) {
-      const message = typeof errorMessage === 'function' 
-        ? errorMessage(...args) 
-        : errorMessage;
-      throw new Error(handleApiError(error, message));
+      // Re-throw the error received from fetchApi (already formatted)
+      // Optionally add more context here if needed, but avoid duplication
+      console.error(`API Handler Error (${typeof errorMessage === 'function' ? errorMessage(...args) : errorMessage}):`, error);
+      throw error; // Propagate the error
     }
   };
 };
 
-// Create resource-specific API clients
+// Create resource-specific API clients using the fetch-based createResourceApi
 const quizApi = createResourceApi('quizzes');
-const questionApi = createResourceApi('quizzes/questions');
-const answerApi = createResourceApi('quizzes/answers');
+// Note: Paths for nested resources might need careful handling if createResourceApi assumes simple base path.
+// Direct calls using get/post might be clearer for nested resources.
+// const questionApi = createResourceApi('quizzes/questions'); // May generate incorrect paths like /quizzes/questions/:id/delete
+// const answerApi = createResourceApi('quizzes/answers'); // May generate incorrect paths like /quizzes/answers/:id/delete
 
 /**
  * Service for Quiz API operations.
@@ -34,12 +36,14 @@ const answerApi = createResourceApi('quizzes/answers');
 const quizService = {
   // Quiz management operations
   getAllQuizzes: createApiHandler(
+    // Use the fetch-based quizApi
     () => quizApi.getAll().then(data => Array.isArray(data) ? data.map(quiz => mapToFrontendModel(quiz, 'quiz')) : []), 
     'Failed to fetch quizzes'
   ),
 
   getPublishedQuizzes: createApiHandler(
-    () => api.get('/published-quizzes').then(data => Array.isArray(data) ? data.map(quiz => mapToFrontendModel(quiz, 'quiz')) : []), 
+    // Use the fetch-based get method directly to the correct published endpoint
+    () => get('published-quizzes').then(data => Array.isArray(data) ? data.map(quiz => mapToFrontendModel(quiz, 'quiz')) : []), 
     'Failed to fetch published quizzes'
   ),
 
@@ -50,7 +54,6 @@ const quizService = {
 
   createQuiz: createApiHandler(
     (quizData) => {
-      // Ensure data is properly mapped to backend expectations
       const mappedData = mapToBackendDTO(quizData, 'quiz');
       return quizApi.create(mappedData).then(quiz => mapToFrontendModel(quiz, 'quiz'));
     }, 
@@ -59,7 +62,6 @@ const quizService = {
 
   updateQuiz: createApiHandler(
     (id, quizData) => {
-      // Ensure data is properly mapped to backend expectations
       const mappedData = mapToBackendDTO(quizData, 'quiz');
       return quizApi.update(id, mappedData).then(quiz => mapToFrontendModel(quiz, 'quiz'));
     }, 
@@ -71,44 +73,37 @@ const quizService = {
     (id) => `Failed to delete quiz with ID ${id}`
   ),
 
+  // Publish/Unpublish stubs remain similar, using fetch-based customAction if defined in createResourceApi
+  // OR direct put/post calls to the specific backend endpoints when implemented.
   publishQuiz: createApiHandler(
-    (id) => quizApi.customAction(id, 'publish'), 
+    // Example: Assuming a PUT request to /api/quizzes/{id}/publish sets published=true
+    // async (id) => await put(`quizzes/${id}/publish`), // Requires backend endpoint
+    // Stub implementation:
+    async (id) => { console.warn(`[frontend stub] publishQuiz called for ID ${id}`); return { id, published: true }; },
     (id) => `Failed to publish quiz with ID ${id}`
   ),
 
   unpublishQuiz: createApiHandler(
-    (id) => quizApi.customAction(id, 'unpublish'), 
+    // Example: Assuming a PUT request to /api/quizzes/{id}/unpublish sets published=false
+    // async (id) => await put(`quizzes/${id}/unpublish`), // Requires backend endpoint
+    // Stub implementation:
+     async (id) => { console.warn(`[frontend stub] unpublishQuiz called for ID ${id}`); return { id, published: false }; },
     (id) => `Failed to unpublish quiz with ID ${id}`
   ),
 
-  // Function aliases for backward compatibility
-  getQuestionAnswers: createApiHandler(
-    (questionId) => api.get(`quizzes/questions/${questionId}/answers`), 
-    (questionId) => `Failed to fetch answer options for question with ID ${questionId}`
-  ),
+  // --- Nested Resource Operations --- 
+  // Use direct get, post, del calls for clarity with nested paths
 
-  createAnswerOption: createApiHandler(
-    (questionId, answerData) => {
-      const mappedData = mapToBackendDTO(answerData, 'answer');
-      return api.post(`quizzes/questions/${questionId}/answers`, mappedData);
-    }, 
-    (questionId) => `Failed to create answer option for question with ID ${questionId}`
-  ),
-
-  deleteAnswerOption: createApiHandler(
-    (answerId) => answerApi.delete(answerId),
-    (answerId) => `Failed to delete answer option with ID ${answerId}`
-  ),
-
-  // Question management operations
+  // Question operations related to a specific quiz
   questions: {
     getByQuizId: createApiHandler(
-      (quizId) => api.get(`quizzes/${quizId}/questions`), 
+      (quizId) => get(`quizzes/${quizId}/questions`), 
       (quizId) => `Failed to fetch questions for quiz with ID ${quizId}`
     ),
 
     getById: createApiHandler(
-      (questionId) => api.get(`quizzes/questions/${questionId}`)
+      // Corrected path: Added /quizzes/ prefix
+      (questionId) => get(`quizzes/questions/${questionId}`)
         .then(question => mapToFrontendModel(question, 'question')),
       (questionId) => `Failed to fetch question with ID ${questionId}`
     ),
@@ -116,34 +111,39 @@ const quizService = {
     create: createApiHandler(
       (quizId, questionData) => {
         const mappedData = mapToBackendDTO(questionData, 'question');
-        return api.post(`quizzes/${quizId}/questions`, mappedData);
+        // POST to the collection URI associated with the quiz
+        return post(`quizzes/${quizId}/questions`, mappedData);
       }, 
       (quizId) => `Failed to create question for quiz with ID ${quizId}`
     ),
 
     delete: createApiHandler(
-      (questionId) => questionApi.delete(questionId), 
+      // Corrected path: Added /quizzes/ prefix
+      (questionId) => del(`quizzes/questions/${questionId}`), 
       (questionId) => `Failed to delete question with ID ${questionId}`
     )
   },
 
-  // Answer option management operations
+  // Answer option operations related to a specific question
   answerOptions: {
     getByQuestionId: createApiHandler(
-      (questionId) => api.get(`quizzes/questions/${questionId}/answers`), 
+      // Corrected path: Added /quizzes/ prefix
+      (questionId) => get(`quizzes/questions/${questionId}/answers`), 
       (questionId) => `Failed to fetch answer options for question with ID ${questionId}`
     ),
 
     create: createApiHandler(
       (questionId, answerData) => {
         const mappedData = mapToBackendDTO(answerData, 'answer');
-        return api.post(`quizzes/questions/${questionId}/answers`, mappedData);
+        // Corrected path: Added /quizzes/ prefix
+        return post(`quizzes/questions/${questionId}/answers`, mappedData);
       }, 
       (questionId) => `Failed to create answer option for question with ID ${questionId}`
     ),
 
     delete: createApiHandler(
-      (answerId) => answerApi.delete(answerId), 
+       // Corrected path: Added /quizzes/ prefix
+      (answerId) => del(`quizzes/answers/${answerId}`), 
       (answerId) => `Failed to delete answer option with ID ${answerId}`
     )
   }

@@ -1,5 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Container, Button, Alert } from 'react-bootstrap';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link as RouterLink } from 'react-router-dom';
 import Layout from './components/Layout';
 import QuizList from './pages/QuizList';
 import QuizDetail from './pages/QuizDetail';
@@ -9,6 +8,13 @@ import QuestionCreate from './pages/QuestionCreate';
 import AnswerOptionManage from './pages/AnswerOptionManage';
 import PublishedQuizList from './pages/PublishedQuizList';
 import AllQuizList from './pages/AllQuizList';
+import {
+  Container,
+  Button,
+  Alert,
+  Typography,
+  Box
+} from '@mui/material';
 
 function App() {
   return (
@@ -38,14 +44,17 @@ function App() {
           
           {/* Catch all for invalid routes */}
           <Route path="*" element={
-            <Container className="text-center py-5">
-              <h1 className="mb-4">Page Not Found</h1>
-              <Alert variant="warning" className="mb-4">
+            <Container maxWidth="sm" sx={{ textAlign: 'center', py: 5 }}>
+              <Typography variant="h3" component="h1" gutterBottom>
+                Page Not Found
+              </Typography>
+              <Alert severity="warning" sx={{ mb: 4 }}>
                 The page you're looking for doesn't exist.
               </Alert>
               <Button 
-                variant="primary"
-                href="/quizzes"
+                variant="contained"
+                component={RouterLink}
+                to="/quizzes"
               >
                 Back to Quizzes
               </Button>
