@@ -1,13 +1,19 @@
 package codefusion.softwareproject1.repo;
 
-
+import codefusion.softwareproject1.entity.Quiz;
 import org.springframework.data.jpa.repository.JpaRepository;
-import codefusion.softwareproject1.Models.QuizClass;
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
-public interface QuizRepo extends JpaRepository<QuizClass, Long> {
-    List<QuizClass> findByPublished(boolean published);
-    List<QuizClass> findByTeacherId(Long teacherId);
-    List<QuizClass> findByCategoriesId(int categoryId);
-
+@Repository
+public interface QuizRepo extends JpaRepository<Quiz, Long> {
+    // Find published quizzes
+    List<Quiz> findByPublishedTrue();
+    
+    // Find quizzes by title containing keyword (for search functionality)
+    List<Quiz> findByTitleContainingIgnoreCase(String keyword);
+    
+    // Find quizzes by teacher id
+    List<Quiz> findByTeacherId(Long teacherId);
 }

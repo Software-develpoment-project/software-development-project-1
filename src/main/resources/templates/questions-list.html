@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      th:replace="~{layout :: layout(~{::title}, ~{::section})}">
+<head>
+    <title th:text="${'Questions for Quiz: ' + quiz.title}">Questions List</title>
+</head>
+<body>
+    <section>
+        <div class="row mb-4">
+            <div class="col">
+                <h1 th:text="${'Questions for Quiz: ' + quiz.title}">Questions List</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/quizzes">Quizzes</a></li>
+                        <li class="breadcrumb-item active" th:text="${quiz.title}">Quiz Title</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="col-auto d-flex align-items-center">
+                <a th:href="@{/quizzes/{quizId}/questions/create(quizId=${quiz.id})}" class="btn btn-primary">Add Question</a>
+            </div>
+        </div>
+
+        <div class="alert alert-success" th:if="${message}" th:text="${message}">
+            Success message
+        </div>
+
+        <div class="alert alert-info" th:if="${questions.empty}">
+            No questions available for this quiz yet. Use the "Add Question" button to create one.
+        </div>
+
+        <div class="row" th:unless="${questions.empty}">
+            <div class="col">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Question Content</th>
+                                <th scope="col">Difficulty</th>
+                                <th scope="col">Number of Choices</th>
+                                <th scope="col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="question, loop : ${questions}">
+                                <th scope="row" th:text="${loop.index + 1}">1</th>
+                                <td th:text="${question.questionText}">Question content</td>
+                                <td>
+                                    <span class="badge rounded-pill"
+                                          th:classappend="${question.difficultyLevel == T(codefusion.softwareproject1.entity.Question.DifficultyLevel).EASY ? 'bg-success' : 
+                                                          (question.difficultyLevel == T(codefusion.softwareproject1.entity.Question.DifficultyLevel).MEDIUM ? 'bg-warning' : 'bg-danger')}"
+                                          th:text="${question.difficultyLevel}">
+                                        Difficulty
+                                    </span>
+                                </td>
+                                <td th:text="${question.answerOptions != null ? question.answerOptions.size() : 0}">4</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a th:href="@{/quizzes/{quizId}/questions/{questionId}/edit(quizId=${quiz.id},questionId=${question.id})}" class="btn btn-sm btn-primary">Edit</a>
+                                        <form th:action="@{/quizzes/{quizId}/questions/{questionId}/delete(quizId=${quiz.id},questionId=${question.id})}" method="post" style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this question?')">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
