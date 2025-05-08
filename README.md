@@ -76,6 +76,9 @@ We welcome contributions! Please follow these steps:
 - Ahmad Jalal: https://github.com/Jalalians99
 >>>>>>> 0c1ef5de7e98252c35357ff9bd03bc9c6e0e221f
 
+## Link to flinga
+https://edu.flinga.fi/s/ECLZ4KQ
+
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
