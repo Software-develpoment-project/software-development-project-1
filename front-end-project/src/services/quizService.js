@@ -27,6 +27,9 @@ const createApiHandler = (apiCall, errorMessage) => {
 const quizApi = createResourceApi('quizzes');
 const questionApi = createResourceApi('quizzes/questions');
 const answerApi = createResourceApi('quizzes/answers');
+const categoryApi = createResourceApi('categories');
+const teacherapi = createResourceApi('teachers');
+
 
 /**
  * Service for Quiz API operations.

@@ -21,6 +21,7 @@ public class QuizMapper implements EntityMapper<Quiz, QuizDTO> {
         dto.setId(entity.getId());
         dto.setTitle(entity.getTitle());
         dto.setDescription(entity.getDescription());
+        
         dto.setPublished(entity.isPublished());
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());

@@ -127,24 +127,18 @@ const AnswerOptionForm = ({
     setError(null);
     
     try {
-    
-
-          // Create new answer option
-          let result;
-          
-          // Try direct function first
-         
-            console.log("Attempting to use quizService.createAnswerOption");
-            
-            result = await quizService.createAnswerOption(questionId, formData);
-         
-          
-          console.log("Answer option created:", result);
-          
-          // Add to list
-          setAnswerOptions([...answerOptions, result]);
-        
-      }
+      // Create new answer option
+      let result;
+      
+      // Try direct function first
+      console.log("Attempting to use quizService.createAnswerOption");
+      
+      result = await quizService.createAnswerOption(questionId, formData);
+      
+      console.log("Answer option created:", result);
+      
+      // Add to list
+      setAnswerOptions([...answerOptions, result]);
       
       // Reset form
       setFormData({

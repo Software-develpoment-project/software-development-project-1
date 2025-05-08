@@ -2,9 +2,15 @@ package codefusion.softwareproject1.controllers;
 
 
 import codefusion.softwareproject1.dto.CategoryDTO;
+import codefusion.softwareproject1.dto.QuizDTO;
 import codefusion.softwareproject1.entity.Category;
 import codefusion.softwareproject1.entity.Quiz;
 import codefusion.softwareproject1.service.CategoryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +24,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/categories")
 
+
 public class CategoriesController {
 
     @Autowired
@@ -29,6 +36,14 @@ public class CategoriesController {
      * @return List of all categories
      */
     @GetMapping
+     @Operation(summary = "Update quiz", description = "Getting all the Quizzes")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Quiz updated successfully",
+                     content = @Content(mediaType = "application/json", 
+                     schema = @Schema(implementation = QuizDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input"),
+        @ApiResponse(responseCode = "404", description = "Categories not found")
+    })
     public ResponseEntity<List<CategoryDTO>> getAllCategories() {
         List<Category> categories = categoryService.getAllCategories();
         List<CategoryDTO> categoryDTOs = categories.stream()

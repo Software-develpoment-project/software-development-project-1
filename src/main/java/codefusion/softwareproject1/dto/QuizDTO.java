@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import codefusion.softwareproject1.entity.Student;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,7 +31,9 @@ public class QuizDTO {
     private Date createdAt;
     
     private Date updatedAt;
-
     
     private List<Long> categoryIds = new ArrayList<>();
+
+    private List<Long> questionIds = new ArrayList<>();
+    
 } 

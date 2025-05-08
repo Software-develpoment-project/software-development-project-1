@@ -7,6 +7,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import java.util.List;
 
 /**
@@ -16,7 +23,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "*")
+@Tag(name = "Published Quizzes", description = "API for accessing published quizzes")
 public class PublishedQuizRestController {
 
     private final QuizService quizService;
@@ -32,8 +39,15 @@ public class PublishedQuizRestController {
      * @return list of published quiz DTOs
      */
     @GetMapping("/published-quizzes")
+    @Operation(summary = "Get all published quizzes", description = "Retrieves all quizzes marked as published")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved list of published quizzes",
+                     content = @Content(mediaType = "application/json", 
+                     schema = @Schema(implementation = QuizDTO.class))),
+        @ApiResponse(responseCode = "404", description = "No published quizzes found")
+    })
     public ResponseEntity<List<QuizDTO>> getPublishedQuizzes() {
         List<QuizDTO> publishedQuizzes = quizService.getPublishedQuizzes();
         return new ResponseEntity<>(publishedQuizzes, HttpStatus.OK);
     }
-} 
+}

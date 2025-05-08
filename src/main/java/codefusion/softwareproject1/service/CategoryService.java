@@ -48,8 +48,6 @@ public class CategoryService {
     
     /**
      * Get all quizzes by category ID
-     * @param categoryId ID of the category
-     * @return List of quizzes in the category
      */
     public List<Quiz> getQuizzesByCategory(Long categoryId) {
         Optional<Category> categoryOpt = categoryRepo.findById(categoryId);
@@ -61,8 +59,7 @@ public class CategoryService {
     
     /**
      * Add a new category
-     * @param categoryDTO Data Transfer Object containing category details
-     * @return The saved category
+     
      */
     @Transactional
     public Category addCategory(CategoryDTO categoryDTO) {
@@ -87,9 +84,6 @@ public class CategoryService {
     
     /**
      * Update an existing category
-     * @param id ID of the category to update
-     * @param categoryDTO DTO containing updated category details
-     * @return Updated category or null if not found
      */
     @Transactional
     public Category updateCategory(Long id, CategoryDTO categoryDTO) {
@@ -118,8 +112,6 @@ public class CategoryService {
     
     /**
      * Delete a category by ID
-     * @param id ID of the category to delete
-     * @return true if deleted successfully, false otherwise
      */
     @Transactional
     public boolean deleteCategory(Long id) {
@@ -132,9 +124,6 @@ public class CategoryService {
     
     /**
      * Add a quiz to a category
-     * @param categoryId ID of the category
-     * @param quizId ID of the quiz to add
-     * @return Updated category or null if either not found
      */
     @Transactional
     public Category addQuizToCategory(Long categoryId, Long quizId) {
@@ -156,9 +145,6 @@ public class CategoryService {
     
     /**
      * Remove a quiz from a category
-     * @param categoryId ID of the category
-     * @param quizId ID of the quiz to remove
-     * @return Updated category or null if either not found
      */
     @Transactional
     public Category removeQuizFromCategory(Long categoryId, Long quizId) {
@@ -174,8 +160,6 @@ public class CategoryService {
     
     /**
      * Get categories by teacher ID
-     * @param teacherId ID of the teacher
-     * @return List of categories created by the teacher
      */
     public List<Category> getCategoriesByTeacher(Long teacherId) {
         return categoryRepo.findByTeacherId(teacherId);
@@ -183,8 +167,6 @@ public class CategoryService {
     
     /**
      * Get categories by quiz ID
-     * @param quizId ID of the quiz
-     * @return List of categories containing this quiz
      */
     public List<Category> getCategoriesByQuiz(Long quizId) {
         return categoryRepo.findByQuizzesId(quizId);
@@ -192,8 +174,6 @@ public class CategoryService {
     
     /**
      * Convert Category entity to CategoryDTO
-     * @param category Category entity
-     * @return CategoryDTO
      */
     public CategoryDTO convertToDTO(Category category) {
         CategoryDTO dto = new CategoryDTO();
@@ -215,11 +195,7 @@ public class CategoryService {
         return dto;
     }
     
-    /**
-     * Convert CategoryDTO to Category entity
-     * @param dto CategoryDTO
-     * @return Category entity (without ID)
-     */
+    
     public Category convertToEntity(CategoryDTO dto) {
         Category category = new Category();
         category.setTitle(dto.getTitle());

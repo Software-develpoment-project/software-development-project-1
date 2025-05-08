@@ -25,4 +25,7 @@ public class QuestionDTO {
     private Date createdAt;
     
     private Date updatedAt;
+    
+
+    
 } 
