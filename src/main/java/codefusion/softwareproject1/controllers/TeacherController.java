@@ -1,5 +1,6 @@
 package codefusion.softwareproject1.controllers;
 
+import codefusion.softwareproject1.dto.QuizDTO;
 import codefusion.softwareproject1.entity.Quiz;
 import codefusion.softwareproject1.entity.Teacher;
 import codefusion.softwareproject1.repo.QuizRepo;
@@ -46,22 +47,7 @@ public class TeacherController {
         return "Quiz created successfully";
     }
 
-    @PostMapping("/edit/{id}")
-    public String editQuiz(@PathVariable Long id, @RequestBody Quiz updatedQuiz) throws IllegalAccessException {
-        Quiz quiz = quizRepository.findById(id)
-                .orElseThrow(() -> new IllegalAccessException("Quiz not found with id: " + id));
-
-        quiz.setTitle(updatedQuiz.getTitle());
-        quiz.setDescription(updatedQuiz.getDescription());
-        
-        quiz.setPublished(updatedQuiz.isPublished());
-        quiz.setQuestions(updatedQuiz.getQuestions());
     
-        
-
-        quizRepository.save(quiz);
-        return "Quiz updated successfully";
-    }
     @PostMapping("/add")
     public String addTeacher(@RequestBody Teacher teacher) {
 
