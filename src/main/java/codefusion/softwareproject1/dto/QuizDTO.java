@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.List;
 
 import codefusion.softwareproject1.entity.Student;
+import codefusion.softwareproject1.entity.Quiz.Difficulty;
 
 @Data
 @NoArgsConstructor
@@ -27,6 +28,8 @@ public class QuizDTO {
     private String description;
     
     private boolean published;
+
+    private Difficulty difficulty;
     
     private Date createdAt;
     
