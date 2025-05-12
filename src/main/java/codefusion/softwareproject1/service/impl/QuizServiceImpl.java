@@ -3,26 +3,23 @@ package codefusion.softwareproject1.service.impl;
 import codefusion.softwareproject1.entity.Category;
 import codefusion.softwareproject1.entity.Quiz;
 import codefusion.softwareproject1.dto.QuizDTO;
+import codefusion.softwareproject1.dto.CategoryDTO;
 import codefusion.softwareproject1.exception.ResourceNotFoundException;
 import codefusion.softwareproject1.repo.CategoryRepo;
 import codefusion.softwareproject1.repo.QuizRepo;
 import codefusion.softwareproject1.service.CategoryService;
 import codefusion.softwareproject1.service.QuizService;
 import codefusion.softwareproject1.service.mapper.QuizMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import codefusion.softwareproject1.service.mapper.CategoryMapper;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
 import java.util.stream.Collectors;
 
 /**
  * Implementation of QuizService for quiz operations.
- * Follows:
- * - Single Responsibility Principle: focuses only on quiz operations
- * - Open/Closed Principle: can be extended without modification
- * - Dependency Inversion Principle: depends on abstractions
  */
 @Service
 public class QuizServiceImpl implements QuizService {
@@ -31,79 +28,84 @@ public class QuizServiceImpl implements QuizService {
     private final QuizMapper quizMapper;
     private final CategoryService categoryService;
     private final CategoryRepo categoryRepo;
+    private final CategoryMapper categoryMapper;
 
-    @Autowired
-    public QuizServiceImpl(QuizRepo quizRepository, QuizMapper quizMapper,CategoryService categoryService,CategoryRepo categoryRepo) {
-        this.categoryRepo = categoryRepo;
-        this.categoryService = categoryService;
+    public QuizServiceImpl(
+            QuizRepo quizRepository,
+            QuizMapper quizMapper,
+            CategoryService categoryService,
+            CategoryRepo categoryRepo,
+            CategoryMapper categoryMapper
+    ) {
         this.quizRepository = quizRepository;
         this.quizMapper = quizMapper;
+        this.categoryService = categoryService;
+        this.categoryRepo = categoryRepo;
+        this.categoryMapper = categoryMapper;
     }
 
     @Override
     public List<QuizDTO> getAllQuizzes() {
-        return quizRepository.findAll().stream()
-                .map(quizMapper::toDto)
-                .collect(Collectors.toList());
+        return quizRepository.findAll().stream().map(quiz -> {
+            QuizDTO dto = quizMapper.toDto(quiz);
+            List<CategoryDTO> categoryDTOs = categoryRepo.findByQuizzesId(quiz.getId())
+                    .stream().map(categoryMapper::toDto).collect(Collectors.toList());
+            dto.setCategories(categoryDTOs);
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     @Override
     public QuizDTO getQuizById(Long id) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", id));
-        
-        return quizMapper.toDto(quiz);
+
+        QuizDTO dto = quizMapper.toDto(quiz);
+        List<CategoryDTO> categoryDTOs = categoryRepo.findByQuizzesId(id)
+                .stream().map(categoryMapper::toDto).collect(Collectors.toList());
+        dto.setCategories(categoryDTOs);
+
+        return dto;
     }
 
+    @Override
     @Transactional
     public QuizDTO createQuiz(QuizDTO quizDTO) {
-        // Convert DTO to entity
         Quiz quiz = quizMapper.toEntity(quizDTO);
-        
-        // Save the quiz first to generate ID
-        quiz = quizRepository.save(quiz);
-        
-        // Associate quiz with categories if categoryIds are provided
+        Quiz savedQuiz = quizRepository.save(quiz);
+
         if (quizDTO.getCategoryIds() != null && !quizDTO.getCategoryIds().isEmpty()) {
             for (Long categoryId : quizDTO.getCategoryIds()) {
-                categoryService.addQuizToCategory(categoryId, quiz.getId());
+                categoryService.addQuizToCategory(categoryId, savedQuiz.getId());
             }
         }
-        
-        // Get the updated quiz with associations
-        if (!quizRepository.findById((quiz.getId())).isPresent()) {
-            return null ;
-        }
-        quiz = quizRepository.findById(quiz.getId()).orElse(quiz);
-        
-        return quizMapper.toDto(quiz);
+
+        List<CategoryDTO> categoryDTOs = categoryRepo.findByQuizzesId(savedQuiz.getId())
+                .stream().map(categoryMapper::toDto).collect(Collectors.toList());
+        QuizDTO resultDTO = quizMapper.toDto(savedQuiz);
+        resultDTO.setCategories(categoryDTOs);
+
+        return resultDTO;
     }
-    
-    /**
-     * Update an existing quiz
-     */
+
+    @Override
     @Transactional
     public QuizDTO updateQuiz(Long id, QuizDTO quizDTO) {
         Quiz existingQuiz = quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", id));
-        
-        // Update basic quiz properties
+
         quizMapper.updateEntityFromDto(quizDTO, existingQuiz);
         existingQuiz = quizRepository.save(existingQuiz);
-        
-        // Handle category associations if provided
+
         if (quizDTO.getCategoryIds() != null) {
-            // Get current categories for this quiz
-            List<Category> currentCategories = categoryRepo.findByQuizzesId(id) ;
-            
-            // Remove quiz from categories that are no longer associated
+            List<Category> currentCategories = categoryRepo.findByQuizzesId(id);
+
             for (Category category : currentCategories) {
                 if (!quizDTO.getCategoryIds().contains(category.getId())) {
                     categoryService.removeQuizFromCategory(category.getId(), id);
                 }
             }
-            
-            // Add quiz to new categories
+
             for (Long categoryId : quizDTO.getCategoryIds()) {
                 boolean exists = currentCategories.stream()
                         .anyMatch(cat -> cat.getId().equals(categoryId));
@@ -112,75 +114,86 @@ public class QuizServiceImpl implements QuizService {
                 }
             }
         }
-        
-        // Get the updated quiz with associations
-        existingQuiz = quizRepository.findById(id).orElse(existingQuiz);
-        
-        return quizMapper.toDto(existingQuiz);
+
+        List<CategoryDTO> updatedCategoryDTOs = categoryRepo.findByQuizzesId(id)
+                .stream().map(categoryMapper::toDto).collect(Collectors.toList());
+
+        QuizDTO resultDTO = quizMapper.toDto(existingQuiz);
+        resultDTO.setCategories(updatedCategoryDTOs);
+
+        return resultDTO;
     }
-    
-    /**
-     * Delete a quiz
-     */
+
+    @Override
     @Transactional
     public void deleteQuiz(Long id) {
         if (!quizRepository.existsById(id)) {
             throw new ResourceNotFoundException("Quiz", "id", id);
         }
-        
-        // Remove quiz from all categories first
+
         List<Category> categories = categoryService.getCategoriesByQuiz(id);
         for (Category category : categories) {
             categoryService.removeQuizFromCategory(category.getId(), id);
         }
-        
-        // Delete the quiz
+
         quizRepository.deleteById(id);
     }
-    
-    /**
-     * Get all published quizzes
-     */
+
+    @Override
     public List<QuizDTO> getPublishedQuizzes() {
-        return quizRepository.findByPublishedTrue().stream()
-                .map(quizMapper::toDto)
-                .collect(Collectors.toList());
+        return quizRepository.findByPublishedTrue().stream().map(quiz -> {
+            QuizDTO dto = quizMapper.toDto(quiz);
+            List<CategoryDTO> categoryDTOs = categoryRepo.findByQuizzesId(quiz.getId())
+                    .stream().map(categoryMapper::toDto).collect(Collectors.toList());
+            dto.setCategories(categoryDTOs);
+            return dto;
+        }).collect(Collectors.toList());
     }
+
     
-    /**
-     * Get quizzes by teacher ID
-     */
     public List<QuizDTO> getQuizzesByTeacher(Long teacherId) {
-        return quizRepository.findByTeacherId(teacherId).stream()
-                .map(quizMapper::toDto)
-                .collect(Collectors.toList());
+        return quizRepository.findByTeacherId(teacherId).stream().map(quiz -> {
+            QuizDTO dto = quizMapper.toDto(quiz);
+            List<CategoryDTO> categoryDTOs = categoryRepo.findByQuizzesId(quiz.getId())
+                    .stream().map(categoryMapper::toDto).collect(Collectors.toList());
+            dto.setCategories(categoryDTOs);
+            return dto;
+        }).collect(Collectors.toList());
     }
-    
-    /**
-     * Publish a quiz
-     */
+
+    @Override
     @Transactional
     public QuizDTO publishQuiz(Long id) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", id));
-        
+
         quiz.setPublished(true);
         quiz = quizRepository.save(quiz);
-        
-        return quizMapper.toDto(quiz);
+
+        List<CategoryDTO> categoryDTOs = categoryRepo.findByQuizzesId(id)
+                .stream().map(categoryMapper::toDto).collect(Collectors.toList());
+
+        QuizDTO resultDTO = quizMapper.toDto(quiz);
+        resultDTO.setCategories(categoryDTOs);
+
+        return resultDTO;
     }
-    
-    /**
-     * Unpublish a quiz
-     */
+
+    @Override
     @Transactional
     public QuizDTO unpublishQuiz(Long id) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", id));
-        
+
         quiz.setPublished(false);
         quiz = quizRepository.save(quiz);
-        
-        return quizMapper.toDto(quiz);
+
+        List<CategoryDTO> categoryDTOs = categoryRepo.findByQuizzesId(id)
+                .stream().map(categoryMapper::toDto).collect(Collectors.toList());
+
+        QuizDTO resultDTO = quizMapper.toDto(quiz);
+        resultDTO.setCategories(categoryDTOs);
+
+        return resultDTO;
     }
-} 
+}

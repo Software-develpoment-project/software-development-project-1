@@ -34,4 +34,7 @@ public class Teacher {
     
     @OneToMany(mappedBy = "teacher")
     private List<Category> categories;
+
+    @Column(name = "password", nullable = false)
+    private String password;
 }

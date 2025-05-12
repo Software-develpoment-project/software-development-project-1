@@ -23,13 +23,14 @@ public class Student {
     private Long id;
     private String name;
     private String email;
+
     
     // ...existing code...
 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuizReview> quizReviews = new ArrayList<>();
 
-
+    private String password;
     
         
     

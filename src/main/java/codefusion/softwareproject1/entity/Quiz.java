@@ -66,4 +66,10 @@ public class Quiz {
     @Column(name = "updated_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
+
+    @ManyToMany(mappedBy = "quizzes")
+    private List<Category> categories; // ✅ new field
+
+
+    
 } 

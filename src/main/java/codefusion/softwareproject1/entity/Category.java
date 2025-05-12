@@ -29,6 +29,7 @@ public class Category {
     )
     private List<Quiz> quizzes;
     
+    
     @ManyToOne
     @JoinColumn(name = "teacher_id")
     private Teacher teacher;

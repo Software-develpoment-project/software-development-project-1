@@ -76,4 +76,6 @@ public interface QuizService {
      * @throws ResourceNotFoundException if the quiz is not found
      */
     QuizDTO unpublishQuiz(Long id);
+
+    
 } 

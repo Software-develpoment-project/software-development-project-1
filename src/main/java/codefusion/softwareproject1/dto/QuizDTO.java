@@ -1,21 +1,22 @@
 package codefusion.softwareproject1.dto;
 
-import jakarta.persistence.ManyToMany;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import codefusion.softwareproject1.entity.Student;
 import codefusion.softwareproject1.entity.Quiz.Difficulty;
 
 @Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class QuizDTO {
@@ -35,8 +36,11 @@ public class QuizDTO {
     
     private Date updatedAt;
     
-    private List<Long> categoryIds = new ArrayList<>();
+    // List of category DTOs to represent the associated categories
+    private List<CategoryDTO> categories = new ArrayList<>();
 
     private List<Long> questionIds = new ArrayList<>();
     
-} 
+    // For internal use in the service layer
+    private List<Long> categoryIds = new ArrayList<>();
+}
