@@ -1,5 +1,6 @@
 package codefusion.softwareproject1.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.* ;

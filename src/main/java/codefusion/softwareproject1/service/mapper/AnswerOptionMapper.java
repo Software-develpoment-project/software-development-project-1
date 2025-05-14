@@ -1,80 +1,66 @@
 package codefusion.softwareproject1.service.mapper;
 
-import codefusion.softwareproject1.entity.AnswerOption;
 import codefusion.softwareproject1.dto.AnswerOptionDTO;
-import codefusion.softwareproject1.repo.QuestionRepo;
-import org.springframework.beans.factory.annotation.Autowired;
+import codefusion.softwareproject1.entity.AnswerOption;
 import org.springframework.stereotype.Component;
 
-/**
- * Mapper for converting between AnswerOption entity and AnswerOptionDTO.
- * Follows Single Responsibility Principle by isolating mapping logic.
- */
 @Component
-public class AnswerOptionMapper implements EntityMapper<AnswerOption, AnswerOptionDTO> {
-    
-    private final QuestionRepo questionRepository;
-    
-    @Autowired
-    public AnswerOptionMapper(QuestionRepo questionRepository) {
-        this.questionRepository = questionRepository;
-    }
+public class AnswerOptionMapper {
 
-    @Override
-    public AnswerOptionDTO toDto(AnswerOption entity) {
-        if (entity == null) {
+    /**
+     * Convert entity to DTO
+     */
+    public AnswerOptionDTO toDto(AnswerOption answerOption) {
+        if (answerOption == null) {
             return null;
         }
-        
+
         AnswerOptionDTO dto = new AnswerOptionDTO();
-        dto.setId(entity.getId());
-        dto.setAnswerText(entity.getAnswerText());
-        dto.setCorrect(entity.isCorrect());
-        dto.setCreatedAt(entity.getCreatedAt());
-        dto.setUpdatedAt(entity.getUpdatedAt());
+        dto.setId(answerOption.getId());
+        dto.setText(answerOption.getText());
+        dto.setIsCorrect(answerOption.getIsCorrect());
+        dto.setExplanation(answerOption.getExplanation());
+        dto.setCreatedAt(answerOption.getCreatedAt());
+        dto.setUpdatedAt(answerOption.getUpdatedAt());
         
-        if (entity.getQuestion() != null) {
-            dto.setQuestionId(entity.getQuestion().getId());
+        if (answerOption.getQuestion() != null) {
+            dto.setQuestionId(answerOption.getQuestion().getId());
         }
         
         return dto;
     }
 
-    @Override
+    /**
+     * Convert DTO to entity
+     */
     public AnswerOption toEntity(AnswerOptionDTO dto) {
         if (dto == null) {
             return null;
         }
-        
-        AnswerOption entity = new AnswerOption();
-        entity.setAnswerText(dto.getAnswerText());
-        entity.setCorrect(dto.getCorrect());
-        
-        // Set question if questionId is provided
-        if (dto.getQuestionId() != null) {
-            questionRepository.findById(dto.getQuestionId())
-                    .ifPresent(entity::setQuestion);
-        }
-        
-        return entity;
+
+        AnswerOption answerOption = new AnswerOption();
+        updateEntityFromDto(dto, answerOption);
+        return answerOption;
     }
 
-    @Override
-    public AnswerOption updateEntityFromDto(AnswerOptionDTO dto, AnswerOption entity) {
-        if (dto == null || entity == null) {
-            return entity;
+    /**
+     * Update entity from DTO
+     */
+    public void updateEntityFromDto(AnswerOptionDTO dto, AnswerOption answerOption) {
+        if (dto == null || answerOption == null) {
+            return;
+        }
+
+        answerOption.setText(dto.getText());
+        
+        if (dto.getIsCorrect() != null) {
+            answerOption.setIsCorrect(dto.getIsCorrect());
         }
         
-        entity.setAnswerText(dto.getAnswerText());
-        entity.setCorrect(dto.getCorrect());
-        
-        // Update question if questionId has changed
-        if (dto.getQuestionId() != null && 
-                (entity.getQuestion() == null || !entity.getQuestion().getId().equals(dto.getQuestionId()))) {
-            questionRepository.findById(dto.getQuestionId())
-                    .ifPresent(entity::setQuestion);
+        if (dto.getExplanation() != null) {
+            answerOption.setExplanation(dto.getExplanation());
         }
         
-        return entity;
+        // Note: Question relation is handled by the service layer
     }
-} 
+}

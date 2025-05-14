@@ -1,48 +1,48 @@
 package codefusion.softwareproject1.service;
 
 import codefusion.softwareproject1.dto.QuestionDTO;
+
 import java.util.List;
-
-/**
- * Service interface for Question operations following Interface Segregation Principle.
- * Contains only methods relevant to Question entity operations.
- */
-
 
 public interface QuestionService {
     
     /**
-     * Adds a new question to a quiz.
-     *
-     * @param questionDTO the question data transfer object
-     * @return the created question DTO with ID field populated
-     * @throws ResourceNotFoundException if the quiz is not found
+     * Add a new question to a quiz
+     * 
+     * @param questionDTO The question to add
+     * @return The created question with ID
      */
     QuestionDTO addQuestion(QuestionDTO questionDTO);
     
     /**
-     * Retrieves all questions for a specific quiz.
-     *
-     * @param quizId the quiz ID
-     * @return list of question DTOs
-     * @throws ResourceNotFoundException if the quiz is not found
+     * Get all questions for a specific quiz
+     * 
+     * @param quizId The ID of the quiz
+     * @return List of questions for the quiz
      */
     List<QuestionDTO> getQuestionsByQuizId(Long quizId);
     
     /**
-     * Retrieves a question by its ID.
-     *
-     * @param id the question ID
-     * @return the question DTO
-     * @throws ResourceNotFoundException if the question is not found
+     * Get a question by its ID
+     * 
+     * @param id The question ID
+     * @return The question
      */
     QuestionDTO getQuestionById(Long id);
     
     /**
-     * Deletes a question by its ID.
-     *
-     * @param id the question ID
-     * @throws ResourceNotFoundException if the question is not found
+     * Delete a question
+     * 
+     * @param id The question ID to delete
      */
     void deleteQuestion(Long id);
-} 
+    
+    /**
+     * Update an existing question
+     * 
+     * @param id The question ID to update
+     * @param questionDTO The updated question data
+     * @return The updated question
+     */
+    QuestionDTO updateQuestion(Long id, QuestionDTO questionDTO);
+}

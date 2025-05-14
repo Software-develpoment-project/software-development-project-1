@@ -8,12 +8,5 @@ import java.util.List;
 
 @Repository
 public interface AnswerOptionRepo extends JpaRepository<AnswerOption, Long> {
-    // Find answer options by question id
     List<AnswerOption> findByQuestionId(Long questionId);
-    
-    // Find correct answer option for a question
-    AnswerOption findByQuestionIdAndCorrectTrue(Long questionId);
-    
-    // Delete all answer options for a specific question
-    void deleteByQuestionId(Long questionId);
 }

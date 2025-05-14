@@ -1,5 +1,6 @@
 package codefusion.softwareproject1.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,17 +24,24 @@ public class AnswerOption {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "answer_text", nullable = false)
-    private String answerText;
-
+    
+    @Column(name = "option_text", nullable = false)
+    private String text;
+    
     @Column(name = "is_correct", nullable = false)
-    private boolean correct;
-
+    private Boolean isCorrect = false;
+    
     @ManyToOne
-    @JoinColumn(name = "question_id")
+    @JoinColumn(name = "question_id", nullable = false)
+    @JsonIgnore
     private Question question;
-
+    
+    @Column(name = "explanation")
+    private String explanation;
+    
+    @Version
+    private Integer version;
+    
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -43,4 +51,4 @@ public class AnswerOption {
     @Column(name = "updated_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
-} 
+}

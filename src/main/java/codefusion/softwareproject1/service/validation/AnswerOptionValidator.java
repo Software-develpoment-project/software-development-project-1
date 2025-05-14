@@ -46,11 +46,11 @@ public class AnswerOptionValidator {
      * @throws ResponseStatusException if validation fails
      */
     public void validateNotDeletingLastCorrectAnswer(AnswerOption answerOptionToDelete) {
-        if (answerOptionToDelete.isCorrect()) {
+        if (answerOptionToDelete.getIsCorrect()) {
             List<AnswerOption> allOptions = answerOptionRepository.findByQuestionId(answerOptionToDelete.getQuestion().getId());
             
             long correctAnswersCount = allOptions.stream()
-                    .filter(AnswerOption::isCorrect)
+                    .filter(AnswerOption::getIsCorrect)
                     .count();
             
             if (correctAnswersCount <= 1) {

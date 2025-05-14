@@ -1,39 +1,48 @@
 package codefusion.softwareproject1.service;
 
 import codefusion.softwareproject1.dto.AnswerOptionDTO;
+
 import java.util.List;
 
-/**
- * Service interface for Answer Options operations following Interface Segregation Principle.
- * Contains only methods relevant to Answer Option entity operations.
- */
 public interface AnswerOptionService {
     
     /**
-     * Adds a new answer option to a question.
-     *
-     * @param answerOptionDTO the answer option data transfer object
-     * @return the created answer option DTO with ID field populated
-     * @throws ResourceNotFoundException if the question is not found
-     * @throws ResponseStatusException if max number of options exceeded
+     * Add a new answer option to a question
+     * 
+     * @param answerOptionDTO The answer option to add
+     * @return The created answer option with ID
      */
     AnswerOptionDTO addAnswerOption(AnswerOptionDTO answerOptionDTO);
     
     /**
-     * Retrieves all answer options for a specific question.
-     *
-     * @param questionId the question ID
-     * @return list of answer option DTOs
-     * @throws ResourceNotFoundException if the question is not found
+     * Get all answer options for a specific question
+     * 
+     * @param questionId The ID of the question
+     * @return List of answer options for the question
      */
     List<AnswerOptionDTO> getAnswerOptionsByQuestionId(Long questionId);
     
     /**
-     * Deletes an answer option by its ID.
-     *
-     * @param id the answer option ID
-     * @throws ResourceNotFoundException if the answer option is not found
-     * @throws ResponseStatusException if trying to delete the only correct answer
+     * Get an answer option by its ID
+     * 
+     * @param id The answer option ID
+     * @return The answer option
+     */
+    AnswerOptionDTO getAnswerOptionById(Long id);
+    
+    /**
+     * Update an existing answer option
+     * 
+     * @param id The answer option ID to update
+     * @param answerOptionDTO The updated answer option data
+     * @return The updated answer option
+     */
+    AnswerOptionDTO updateAnswerOption(Long id, AnswerOptionDTO answerOptionDTO);
+    
+    /**
+     * Delete an answer option
+     * 
+     * @param id The answer option ID to delete
      */
     void deleteAnswerOption(Long id);
-} 
+}

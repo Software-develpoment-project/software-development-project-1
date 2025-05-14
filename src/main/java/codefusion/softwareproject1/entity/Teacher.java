@@ -28,8 +28,7 @@ public class Teacher {
     @Column(name = "email", nullable = false, unique = true)
     private String email;
     
-    @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL)
-    private List<Quiz> quizzes;
+    
 
     
     @OneToMany(mappedBy = "teacher")
