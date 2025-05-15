@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * Enhanced with improved transaction handling and error prevention.
  */
 @Service
-@EnableTransactionManagement
+
 public class CategoryService {
     
     @Autowired
@@ -142,9 +142,7 @@ public class CategoryService {
             }
             
             return categoryRepo.saveAndFlush(category);
-        } catch (OptimisticLockingFailureException e) {
-            throw new RuntimeException("The category was modified by another transaction. Please try again.", e);
-        } catch (ResourceNotFoundException e) {
+        }  catch (ResourceNotFoundException e) {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException("Error updating category: " + e.getMessage(), e);

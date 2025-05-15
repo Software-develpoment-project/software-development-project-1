@@ -48,6 +48,5 @@ public class QuizDTO {
     
     private List<QuestionDTO> question ;
     
-    // Add version field to support optimistic locking
-    private Long version;
+    
 }

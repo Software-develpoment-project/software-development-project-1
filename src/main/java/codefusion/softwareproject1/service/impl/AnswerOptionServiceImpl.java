@@ -11,12 +11,8 @@ import codefusion.softwareproject1.service.mapper.AnswerOptionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.OptimisticLockingFailureException;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,12 +41,7 @@ public class AnswerOptionServiceImpl implements AnswerOptionService {
     }
 
     @Override
-    @Transactional
-    @Retryable(
-        value = {ObjectOptimisticLockingFailureException.class, OptimisticLockingFailureException.class},
-        maxAttempts = 3,
-        backoff = @Backoff(delay = 100)
-    )
+    
     public AnswerOptionDTO addAnswerOption(AnswerOptionDTO answerOptionDTO) {
         logger.info("Adding new answer option to question ID: {}", answerOptionDTO.getQuestionId());
         
@@ -72,11 +63,7 @@ public class AnswerOptionServiceImpl implements AnswerOptionService {
             logger.info("Answer option added successfully with ID: {}", answerOption.getId());
             
             return answerOptionMapper.toDto(answerOption);
-        } catch (OptimisticLockingFailureException e) {
-            logger.warn("Optimistic locking failure while adding answer option to question ID: {}. Will retry operation.", 
-                      answerOptionDTO.getQuestionId());
-            throw e;  // Let the @Retryable handle this
-        } catch (Exception e) {
+        }  catch (Exception e) {
             logger.error("Error adding answer option to question ID {}: {}", 
                       answerOptionDTO.getQuestionId(), e.getMessage());
             throw e;
@@ -84,7 +71,7 @@ public class AnswerOptionServiceImpl implements AnswerOptionService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+   
     public List<AnswerOptionDTO> getAnswerOptionsByQuestionId(Long questionId) {
         logger.info("Retrieving answer options for question ID: {}", questionId);
         
@@ -99,7 +86,7 @@ public class AnswerOptionServiceImpl implements AnswerOptionService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    
     public AnswerOptionDTO getAnswerOptionById(Long id) {
         logger.info("Retrieving answer option ID: {}", id);
         
@@ -110,12 +97,7 @@ public class AnswerOptionServiceImpl implements AnswerOptionService {
     }
 
     @Override
-    @Transactional
-    @Retryable(
-        value = {ObjectOptimisticLockingFailureException.class, OptimisticLockingFailureException.class},
-        maxAttempts = 3,
-        backoff = @Backoff(delay = 100)
-    )
+    
     public AnswerOptionDTO updateAnswerOption(Long id, AnswerOptionDTO answerOptionDTO) {
         logger.info("Updating answer option ID: {}", id);
         
@@ -150,9 +132,6 @@ public class AnswerOptionServiceImpl implements AnswerOptionService {
             logger.info("Answer option updated successfully: {}", existingAnswerOption.getId());
             
             return answerOptionMapper.toDto(existingAnswerOption);
-        } catch (OptimisticLockingFailureException e) {
-            logger.warn("Optimistic locking failure while updating answer option ID: {}. Will retry operation.", id);
-            throw e;  // Let the @Retryable handle this
         } catch (Exception e) {
             logger.error("Error updating answer option ID {}: {}", id, e.getMessage());
             throw e;
@@ -160,12 +139,7 @@ public class AnswerOptionServiceImpl implements AnswerOptionService {
     }
 
     @Override
-    @Transactional
-    @Retryable(
-        value = {ObjectOptimisticLockingFailureException.class, OptimisticLockingFailureException.class},
-        maxAttempts = 3,
-        backoff = @Backoff(delay = 100)
-    )
+    
     public void deleteAnswerOption(Long id) {
         logger.info("Deleting answer option ID: {}", id);
         
@@ -181,10 +155,7 @@ public class AnswerOptionServiceImpl implements AnswerOptionService {
             
             answerOptionRepository.deleteById(id);
             logger.info("Answer option deleted successfully: {}", id);
-        } catch (OptimisticLockingFailureException e) {
-            logger.warn("Optimistic locking failure while deleting answer option ID: {}. Will retry operation.", id);
-            throw e;  // Let the @Retryable handle this
-        } catch (Exception e) {
+        }  catch (Exception e) {
             logger.error("Error deleting answer option ID {}: {}", id, e.getMessage());
             throw e;
         }

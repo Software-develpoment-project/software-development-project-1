@@ -43,7 +43,7 @@ public class QuizMapper implements EntityMapper<Quiz, QuizDTO> {
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());
         dto.setDifficulty(entity.getDifficulty());
-        dto.setVersion(entity.getVersion());
+       
         
         // Handle categories safely
         if (entity.getCategories() != null && !entity.getCategories().isEmpty()) {
@@ -85,7 +85,7 @@ public class QuizMapper implements EntityMapper<Quiz, QuizDTO> {
         // Initialize collections to prevent null pointer exceptions
         entity.setCategories(new ArrayList<>());
         entity.setQuestions(new ArrayList<>());
-        entity.setVersion(dto.getVersion());
+       
         
         // Map categories if provided
         if (dto.getCategoryIds() != null && !dto.getCategoryIds().isEmpty()) {

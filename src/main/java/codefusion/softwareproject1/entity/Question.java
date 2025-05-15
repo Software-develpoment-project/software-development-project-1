@@ -27,7 +27,7 @@ public class Question {
     private Long id;
     
     @Column(name = "question_text", nullable = false)
-    private String text;
+    private String questionText;
     
     @Column(name = "points", nullable = false)
     private Integer points = 1;
@@ -62,14 +62,14 @@ public class Question {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 
+    public void removeAnswerOption(AnswerOption answerOption) {
+        
+        answerOptions.remove(answerOption);
+    
+    }
+
     public void addAnswerOption(AnswerOption answerOption) {
         answerOptions.add(answerOption);
         answerOption.setQuestion(this);
     }
-    
-    public void removeAnswerOption(AnswerOption answerOption) {
-        answerOptions.remove(answerOption);
-        answerOption.setQuestion(null);
-    }
 } 
-

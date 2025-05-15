@@ -11,12 +11,7 @@ import codefusion.softwareproject1.service.mapper.QuestionMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.OptimisticLockingFailureException;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,12 +39,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    @Transactional
-    @Retryable(
-        value = {ObjectOptimisticLockingFailureException.class, OptimisticLockingFailureException.class},
-        maxAttempts = 3,
-        backoff = @Backoff(delay = 100)
-    )
+    
     public QuestionDTO addQuestion(QuestionDTO questionDTO) {
         logger.info("Adding new question to quiz ID: {}", questionDTO.getQuizId());
         
@@ -67,18 +57,13 @@ public class QuestionServiceImpl implements QuestionService {
             logger.info("Question added successfully with ID: {}", question.getId());
             
             return questionMapper.toDto(question);
-        } catch (OptimisticLockingFailureException e) {
-            logger.warn("Optimistic locking failure while adding question to quiz ID: {}. Will retry operation.", 
-                      questionDTO.getQuizId());
-            throw e;  // Let the @Retryable handle this
-        } catch (Exception e) {
+        }  catch (Exception e) {
             logger.error("Error adding question to quiz ID {}: {}", questionDTO.getQuizId(), e.getMessage());
             throw e;
         }
     }
 
-    @Override
-    @Transactional(readOnly = true)
+   
     public List<QuestionDTO> getQuestionsByQuizId(Long quizId) {
         logger.info("Retrieving questions for quiz ID: {}", quizId);
         
@@ -92,8 +77,7 @@ public class QuestionServiceImpl implements QuestionService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    @Transactional(readOnly = true)
+   
     public QuestionDTO getQuestionById(Long id) {
         logger.info("Retrieving question ID: {}", id);
         
@@ -103,13 +87,7 @@ public class QuestionServiceImpl implements QuestionService {
         return questionMapper.toDto(question);
     }
 
-    @Override
-    @Transactional
-    @Retryable(
-        value = {ObjectOptimisticLockingFailureException.class, OptimisticLockingFailureException.class},
-        maxAttempts = 3,
-        backoff = @Backoff(delay = 100)
-    )
+   
     public void deleteQuestion(Long id) {
         logger.info("Deleting question ID: {}", id);
         
@@ -120,11 +98,41 @@ public class QuestionServiceImpl implements QuestionService {
         try {
             questionRepository.deleteById(id);
             logger.info("Question deleted successfully: {}", id);
-        } catch (OptimisticLockingFailureException e) {
-            logger.warn("Optimistic locking failure while deleting question ID: {}. Will retry operation.", id);
-            throw e;  // Let the @Retryable handle this
-        } catch (Exception e) {
+        }  catch (Exception e) {
             logger.error("Error deleting question ID {}: {}", id, e.getMessage());
+            throw e;
+        }
+    }
+    
+    
+    public QuestionDTO updateQuestion(Long id, QuestionDTO questionDTO) {
+        logger.info("Updating question ID: {}", id);
+        
+        Question existingQuestion = questionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Question", "id", id));
+        
+        try {
+            // Update question fields from DTO
+            questionMapper.updateEntityFromDto(questionDTO, existingQuestion);
+            
+            // If quiz ID has changed, update the quiz relationship
+            if (questionDTO.getQuizId() != null && 
+                (existingQuestion.getQuiz() == null || 
+                !questionDTO.getQuizId().equals(existingQuestion.getQuiz().getId()))) {
+                
+                Quiz newQuiz = quizRepository.findById(questionDTO.getQuizId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Quiz", "id", questionDTO.getQuizId()));
+                
+                existingQuestion.setQuiz(newQuiz);
+            }
+            
+            // Save updated question
+            existingQuestion = questionRepository.save(existingQuestion);
+            logger.info("Question updated successfully: {}", existingQuestion.getId());
+            
+            return questionMapper.toDto(existingQuestion);
+        } catch (Exception e) {
+            logger.error("Error updating question ID {}: {}", id, e.getMessage());
             throw e;
         }
     }

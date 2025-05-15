@@ -63,8 +63,7 @@ public class Quiz {
     private Teacher teacher;
     
     // Add version field for optimistic locking
-    @Version
-    private Long version;
+   
     
     // Helper methods to maintain bidirectional relationships
     public void addQuestion(Question question) {
