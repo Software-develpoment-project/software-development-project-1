@@ -83,7 +83,7 @@ public class QuizMapper implements EntityMapper<Quiz, QuizDTO> {
         entity.setDifficulty(dto.getDifficulty());
         
         // Initialize collections to prevent null pointer exceptions
-        entity.setCategories(new ArrayList<>());
+       entity.setCategories(new ArrayList<>());
         entity.setQuestions(new ArrayList<>());
        
         
@@ -109,7 +109,7 @@ public class QuizMapper implements EntityMapper<Quiz, QuizDTO> {
                 .filter(q -> q != null) // Filter out nulls
                 .collect(Collectors.toList());
             entity.setQuestions(questions);
-        }
+        } 
         
         return entity;
     }
@@ -157,6 +157,19 @@ public class QuizMapper implements EntityMapper<Quiz, QuizDTO> {
                 
                 entity.setQuestions(questions);
             }
+        }
+        if( dto.getCategoryIds() != null && !dto.getCategoryIds().isEmpty()){
+            List<Category> categories = dto.getCategoryIds().stream()
+                .map(categoryId -> {
+                    Category category = new Category();
+                    category.setId(categoryId);
+                    return category;
+                })
+                .filter(cat -> cat != null) // Filter out nulls
+                .collect(Collectors.toList());
+            entity.setCategories(categories);
+        } else {
+            entity.setCategories(Collections.emptyList());
         }
         
         return entity;
