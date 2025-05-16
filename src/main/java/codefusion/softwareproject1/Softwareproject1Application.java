@@ -15,7 +15,6 @@ import codefusion.softwareproject1.repo.TeacherRepo;
 
 @SpringBootApplication
 @EnableJpaAuditing
-
 public class Softwareproject1Application {
 	@Autowired
 	private static TeacherRepo	 teacherRepo;

@@ -48,7 +48,22 @@ public class StudentController {
         
         return new ResponseEntity<>(studentDto, HttpStatus.OK);
     }
-    
+
+    @PostMapping("/student/quizzes")
+    @Operation(summary = "Get all published quizzes for a student", description = "Retrieves all quiz reviews for a specific student")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved student quiz data"),
+        @ApiResponse(responseCode = "404", description = "Student not found")
+    })
+    public ResponseEntity<StudentDto> getAllPublishedQuizzes(@PathVariable Long studentId) {
+        StudentDto studentDto = studentService.getAllQuiz(studentId);
+        
+        if (studentDto == null) {
+            throw new ResourceNotFoundException("Student", "id", studentId);
+        }
+        
+        return new ResponseEntity<>(studentDto, HttpStatus.OK);
+    }
     /**
      * Save a quiz review for a student
      * 
