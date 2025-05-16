@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -73,6 +74,5 @@ public class PublishedQuizRestController {
      * @param categoryId the ID of the category to filter by
      * @return list of published quiz DTOs in the specified category
      */
-    
     
 }

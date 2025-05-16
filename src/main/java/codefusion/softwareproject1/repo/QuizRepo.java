@@ -17,6 +17,6 @@ public interface QuizRepo extends JpaRepository<Quiz, Long> {
     // Find quizzes by teacher id
     List<Quiz> findByTeacherId(Long teacherId);
 
-    
+    List<Quiz> findByCategoriesIdAndPublishedTrue(Long categoryId);
 
 }
