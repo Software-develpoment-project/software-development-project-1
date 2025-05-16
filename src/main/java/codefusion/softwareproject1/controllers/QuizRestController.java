@@ -228,6 +228,23 @@ public class QuizRestController {
         List<AnswerOptionDTO> answerOptions = answerOptionService.getAnswerOptionsByQuestionId(questionId);
         return new ResponseEntity<>(answerOptions, HttpStatus.OK);
     }
+    @PutMapping("/answers/{questionId}")
+    @Operation(summary = "Update answer option", description = "Updates an existing answer option with the provided information")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Answer option updated successfully",
+                     content = @Content(mediaType = "application/json", 
+                     schema = @Schema(implementation = AnswerOptionDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input"),
+        @ApiResponse(responseCode = "404", description = "Answer option not found")
+    })
+    public ResponseEntity<AnswerOptionDTO> updateAnswerOption(
+            @Parameter(description = "Answer option ID", required = true) 
+            @PathVariable Long questionId,
+            @Parameter(description = "Updated answer option information", required = true) 
+            @Valid @RequestBody AnswerOptionDTO answerOptionDTO) {
+        AnswerOptionDTO updatedAnswerOption = answerOptionService.updateAnswerOption(questionId, answerOptionDTO);
+        return new ResponseEntity<>(updatedAnswerOption, HttpStatus.OK);
+    }
 
     @DeleteMapping("/answers/{id}")
     @Operation(summary = "Delete answer option", description = "Deletes an answer option by its ID")
@@ -241,4 +258,5 @@ public class QuizRestController {
         answerOptionService.deleteAnswerOption(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+    
 }
