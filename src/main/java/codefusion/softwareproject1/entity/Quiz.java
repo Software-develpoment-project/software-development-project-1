@@ -10,7 +10,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -28,26 +28,12 @@ public class Quiz {
 
     @Column(name = "title", nullable = false)
     private String title;
-    
-    @Column(name = "description")
+
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
-    
+
     @Column(name = "course_code", length = 50)
     private String courseCode;
-
-    public enum Difficulty {
-        EASY, MEDIUM, HARD
-    }
-
-    public enum Topic {
-        MATH, SCIENCE, HISTORY, TECHNOLOGY
-    }
-
-    @Enumerated(EnumType.STRING)
-    private Difficulty difficulty;
-
-    @Enumerated(EnumType.STRING)
-    private Topic topic;
 
     @Column(name = "published")
     private boolean published;
@@ -55,18 +41,20 @@ public class Quiz {
     @JsonIgnore
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> questions;
-    
+
     @ManyToOne
     @JoinColumn(name = "teacher_id")
     private Teacher teacher;
-    
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
     @LastModifiedDate
     @Column(name = "updated_at")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date updatedAt;
-} 
+    private LocalDateTime updatedAt;
+}

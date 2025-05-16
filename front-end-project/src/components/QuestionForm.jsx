@@ -3,10 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import {
   TextField,
   Button,
-  Container,
   Alert,
   CircularProgress,
-  Paper,
   Typography,
   FormControl,
   FormLabel,
@@ -21,28 +19,26 @@ import quizService from '../services/quizService';
 
 const QuestionForm = ({
   quizId,
-  question = null, // For potential edit mode in the future
+  question = null,
   onSubmit = null,
-  // title prop is now typically handled by the parent page component
   buttonLabel = 'Save Question',
-  cancelRoute = null // Parent should provide this
+  cancelRoute = null
 }) => {
   const [formData, setFormData] = useState({
     content: question?.content || '',
     quizId: quizId || question?.quizId || '',
-    difficultyLevel: question?.difficultyLevel || 'MEDIUM' // Default difficulty
+    difficultyLevel: question?.difficultyLevel || 'MEDIUM'
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
-  
+
   const navigate = useNavigate();
-  
+
   const defaultCancelRoute = quizId ? `/quizzes/${quizId}` : '/quizzes';
 
   useEffect(() => {
-    // If editing an existing question, prefill form data
     if (question) {
       setFormData({
         content: question.content || '',
@@ -51,19 +47,19 @@ const QuestionForm = ({
       });
     }
   }, [question, quizId]);
-  
+
   const validate = () => {
     const errors = {};
     if (!formData.content.trim()) errors.content = 'Question text is required';
     else if (formData.content.length < 5) errors.content = 'Question text must be at least 5 characters';
-    else if (formData.content.length > 1000) errors.content = 'Question text must be less than 1000 characters'; // Increased limit
-    
+    else if (formData.content.length > 1000) errors.content = 'Question text must be less than 1000 characters';
+
     if (!formData.quizId) errors.quizId = 'Quiz ID is missing. Cannot save question.';
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
-  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -71,31 +67,26 @@ const QuestionForm = ({
       setValidationErrors(prev => ({ ...prev, [name]: null }));
     }
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-    
+
     setLoading(true);
     setError(null);
-    
+
     const payload = {
-        questionText: formData.content, // Align with backend model if needed
+        questionText: formData.content,
         difficultyLevel: formData.difficultyLevel,
         quizId: formData.quizId
-        // If your backend expects `content` instead of `questionText` ensure to use that
-        // content: formData.content,
     };
 
     try {
       let result;
       if (onSubmit) {
-        result = await onSubmit(payload); // Use provided onSubmit
+        result = await onSubmit(payload);
       } else {
         if (question && question.id) {
-          // Update logic - ensure your service supports this if you enable editing
-          // result = await quizService.questions.update(question.id, payload);
-          console.warn('Question update functionality not fully implemented yet.');
           throw new Error('Editing questions via this form is not fully supported yet.');
         } else {
           result = await quizService.questions.create(formData.quizId, payload);
@@ -103,13 +94,12 @@ const QuestionForm = ({
       }
       navigate(cancelRoute || defaultCancelRoute);
     } catch (err) {
-      console.error('Question form submission error:', err);
       setError(err.message || 'Failed to save question. Please try again.');
     } finally {
       setLoading(false);
     }
   };
-  
+
   return (
     <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
       {error && (
@@ -164,7 +154,7 @@ const QuestionForm = ({
         <Button
           variant="contained"
           type="submit"
-          disabled={loading || !formData.quizId} // Disable if quizId is missing
+          disabled={loading || !formData.quizId}
           startIcon={loading ? <CircularProgress size={20} /> : null}
         >
           {loading ? 'Saving...' : buttonLabel}
@@ -174,4 +164,4 @@ const QuestionForm = ({
   );
 };
 
-export default QuestionForm; 
+export default QuestionForm;

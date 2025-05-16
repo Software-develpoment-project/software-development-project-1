@@ -83,7 +83,6 @@ const AnswerOptionManage = () => {
   }
   
   if (!question) {
-    // This case should ideally be covered by the error state if fetching failed
     return (
       <Container maxWidth="sm" sx={{ mt: 4 }}>
         <Alert severity="warning" action={

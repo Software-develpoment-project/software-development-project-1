@@ -10,7 +10,6 @@ const QuizCreate = () => {
           Create New Quiz
         </Typography>
         <QuizForm 
-          // title is now handled by Typography above
           buttonLabel="Create Quiz" 
         />
       </Paper>

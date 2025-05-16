@@ -4,16 +4,10 @@ import codefusion.softwareproject1.dto.TeacherDTO;
 import codefusion.softwareproject1.entity.Teacher;
 import org.springframework.stereotype.Component;
 
-/**
- * Mapper for converting between Teacher entities and DTOs.
- * Follows Single Responsibility Principle by separating mapping logic.
- */
 @Component
 public class TeacherMapper {
     
-    /**
-     * Convert Teacher entity to TeacherDTO
-     */
+   
     public TeacherDTO toDto(Teacher teacher) {
         if (teacher == null) {
             return null;
@@ -27,9 +21,7 @@ public class TeacherMapper {
         return dto;
     }
     
-    /**
-     * Convert TeacherDTO to Teacher entity
-     */
+  
     public Teacher toEntity(TeacherDTO dto) {
         if (dto == null) {
             return null;
@@ -37,7 +29,6 @@ public class TeacherMapper {
         
         Teacher teacher = new Teacher();
         
-        // Don't set ID for new entities
         if (dto.getId() != null) {
             teacher.setId(dto.getId());
         }
@@ -48,9 +39,6 @@ public class TeacherMapper {
         return teacher;
     }
     
-    /**
-     * Update Teacher entity with data from DTO
-     */
     public Teacher updateEntity(Teacher teacher, TeacherDTO dto) {
         if (teacher == null || dto == null) {
             return teacher;

@@ -10,7 +10,6 @@ import {
   Button,
   Checkbox,
   TextField,
-  Container,
   Alert,
   CircularProgress,
   Paper,
@@ -34,30 +33,27 @@ import quizService from '../services/quizService';
 
 const AnswerOptionForm = ({
   questionId,
-  // answerOption prop for editing - potentially future feature
-  // title prop is handled by parent page
   buttonLabel = 'Add Answer Option',
-  cancelRoute = null // Parent should provide this
+  cancelRoute = null
 }) => {
   const [formData, setFormData] = useState({
-    answerText: '', // Renamed from content
-    correct: false,  // Renamed from isCorrect
+    answerText: '',
+    correct: false,
     questionId: questionId
   });
-  
+
   const [answerOptions, setAnswerOptions] = useState([]);
-  const [loading, setLoading] = useState(false); // Loading state for form submission
-  const [listLoading, setListLoading] = useState(true); // Loading state for the list
+  const [loading, setLoading] = useState(false);
+  const [listLoading, setListLoading] = useState(true);
   const [error, setError] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
   const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
   const [optionToDelete, setOptionToDelete] = useState(null);
-  
-  const navigate = useNavigate();
-  
-  const defaultCancelRoute = questionId ? `/quizzes/${questionId}` : '/quizzes'; // Fallback needed
 
-  // Fetch existing options
+  const navigate = useNavigate();
+
+  const defaultCancelRoute = questionId ? `/quizzes/${questionId}` : '/quizzes';
+
   const fetchAnswerOptions = async () => {
     if (!questionId) {
       setError('Cannot load answers: Question ID is missing.');
@@ -70,61 +66,59 @@ const AnswerOptionForm = ({
       setAnswerOptions(Array.isArray(data) ? data : []);
       setError(null);
     } catch (err) {
-      console.error('Failed to load answer options:', err);
       setError('Failed to load existing answer options.');
       setAnswerOptions([]);
     } finally {
       setListLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchAnswerOptions();
   }, [questionId]);
-  
+
   const validate = () => {
     const errors = {};
-    if (!formData.answerText.trim()) errors.answerText = 'Answer text is required'; // Use answerText
-    else if (formData.answerText.length > 500) errors.answerText = 'Answer text must be less than 500 characters'; // Use answerText
-    
+    if (!formData.answerText.trim()) errors.answerText = 'Answer text is required';
+    else if (formData.answerText.length > 500) errors.answerText = 'Answer text must be less than 500 characters';
+
     if (answerOptions.length >= 4) {
        errors.general = 'Maximum 4 answer options allowed per question.';
-       setError('Maximum 4 answer options allowed per question.'); // Show error prominently
+       setError('Maximum 4 answer options allowed per question.');
     }
-    
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
-  
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     if (validationErrors[name]) {
       setValidationErrors(prev => ({ ...prev, [name]: null }));
     }
-    if (error && name === 'answerText') setError(null); // Clear general error on text input
+    if (error && name === 'answerText') setError(null);
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null); // Clear previous errors
+    setError(null);
     if (!validate()) return;
-    
+
     setLoading(true);
-    
-    const payload = { 
-      answerText: formData.answerText, // Correct field name
-      correct: formData.correct,    // Correct field name
-      questionId: formData.questionId // Include questionId explicitly
+
+    const payload = {
+      answerText: formData.answerText,
+      correct: formData.correct,
+      questionId: formData.questionId
     };
-    
+
     try {
       const newOption = await quizService.answerOptions.create(questionId, payload);
-      setAnswerOptions(prevOptions => [...prevOptions, newOption]); // Assuming the create call returns the new object with ID
-      setFormData({ answerText: '', correct: false, questionId }); // Reset form with correct field names
+      setAnswerOptions(prevOptions => [...prevOptions, newOption]);
+      setFormData({ answerText: '', correct: false, questionId });
       setValidationErrors({});
     } catch (err) {
-      console.error('Failed to save answer option:', err);
       setError(err.message || 'Failed to save answer option. Please try again.');
     } finally {
       setLoading(false);
@@ -143,7 +137,6 @@ const AnswerOptionForm = ({
         setAnswerOptions(prevOptions => prevOptions.filter(opt => opt.id !== optionToDelete.id));
         setError(null);
       } catch (err) {
-         console.error('Failed to delete answer option:', err);
          setError(err.message || 'Failed to delete answer option. Please try again.');
       }
     }
@@ -155,7 +148,7 @@ const AnswerOptionForm = ({
     setConfirmDeleteDialogOpen(false);
     setOptionToDelete(null);
   };
-  
+
   return (
     <Box sx={{ mt: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -194,15 +187,15 @@ const AnswerOptionForm = ({
                 <TableRow key={option.id} hover>
                   <TableCell sx={{ wordBreak: 'break-word' }}>{option.answerText}</TableCell>
                   <TableCell align="center">
-                    <Chip 
-                      label={option.correct ? 'Correct' : 'Incorrect'} 
-                      color={option.correct ? 'success' : 'error'} 
-                      size="small" 
+                    <Chip
+                      label={option.correct ? 'Correct' : 'Incorrect'}
+                      color={option.correct ? 'success' : 'error'}
+                      size="small"
                       variant="outlined"
                     />
                   </TableCell>
                   <TableCell align="right">
-                    <IconButton 
+                    <IconButton
                         size="small"
                         onClick={() => handleDeleteClick(option)}
                         aria-label="delete answer option"
@@ -217,8 +210,7 @@ const AnswerOptionForm = ({
           </Table>
         </TableContainer>
       )}
-      
-      {/* Add New Answer Form */}  
+
       <Paper component="form" onSubmit={handleSubmit} elevation={1} sx={{ p: 2 }}>
           <Typography variant="h6" component="h3" gutterBottom>
               Add New Answer Option
@@ -229,7 +221,7 @@ const AnswerOptionForm = ({
             </Alert>
           )}
           {validationErrors.general && (
-            <Alert severity="warning" sx={{ mb: 2 }} onClose={() => setValidationErrors(prev => ({ ...prev, general: null}))}> 
+            <Alert severity="warning" sx={{ mb: 2 }} onClose={() => setValidationErrors(prev => ({ ...prev, general: null}))}>
               {validationErrors.general}
             </Alert>
           )}
@@ -250,10 +242,10 @@ const AnswerOptionForm = ({
             </Grid>
             <Grid item xs={12} sm={2}>
                 <FormControlLabel
-                    control={<Checkbox 
+                    control={<Checkbox
                                 name="correct"
                                 checked={formData.correct}
-                                onChange={handleChange} 
+                                onChange={handleChange}
                                 disabled={loading || answerOptions.length >= 4}
                              />}
                     label="Correct"
@@ -273,8 +265,7 @@ const AnswerOptionForm = ({
             </Grid>
           </Grid>
         </Paper>
-        
-      {/* Confirmation Dialog for Delete */}    
+
       <Dialog
         open={confirmDeleteDialogOpen}
         onClose={handleCloseConfirmDialog}
@@ -296,4 +287,4 @@ const AnswerOptionForm = ({
   );
 };
 
-export default AnswerOptionForm; 
+export default AnswerOptionForm;

@@ -76,4 +76,13 @@ public interface QuizService {
      * @throws ResourceNotFoundException if the quiz is not found
      */
     QuizDTO unpublishQuiz(Long id);
+
+    /**
+     * Retrieves all published quizzes for a specific category.
+     *
+     * @param categoryId the category ID
+     * @return list of published quiz DTOs for that category
+     * @throws ResourceNotFoundException if the category is not found (optional, can also return empty list)
+     */
+    List<QuizDTO> getPublishedQuizzesByCategoryId(Long categoryId);
 } 

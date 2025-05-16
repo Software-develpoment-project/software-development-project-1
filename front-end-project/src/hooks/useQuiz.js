@@ -1,12 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getQuizById } from '../services/quizService';
+import { getQuizById } from '../services/quizService'; 
 
-/**
- * Custom hook for fetching a single quiz by ID
- * 
- * @param {string|number} quizId - The ID of the quiz to fetch
- * @returns {Object} - Object containing quiz data, loading state, and error state
- */
 export const useQuiz = (quizId) => {
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -14,8 +8,8 @@ export const useQuiz = (quizId) => {
 
   useEffect(() => {
     const fetchQuiz = async () => {
-      // Don't fetch if no quizId is provided
       if (!quizId) {
+        setQuiz(null); // Explicitly set to null if no quizId
         setLoading(false);
         return;
       }
@@ -23,11 +17,11 @@ export const useQuiz = (quizId) => {
       try {
         setLoading(true);
         setError(null);
-        
-        const response = await getQuizById(quizId);
-        setQuiz(response.data);
-      } catch (error) {
-        setError(error.message || 'Failed to fetch quiz');
+        const quizData = await getQuizById(quizId);
+        setQuiz(quizData);
+      } catch (err) {
+        setError(err.message || 'Failed to fetch quiz');
+        setQuiz(null); 
       } finally {
         setLoading(false);
       }
@@ -39,4 +33,4 @@ export const useQuiz = (quizId) => {
   return { quiz, loading, error };
 };
 
-export default useQuiz; 
+export default useQuiz;

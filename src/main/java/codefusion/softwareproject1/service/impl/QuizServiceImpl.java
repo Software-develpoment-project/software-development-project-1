@@ -103,4 +103,16 @@ public class QuizServiceImpl implements QuizService {
         
         return quizMapper.toDto(quiz);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<QuizDTO> getPublishedQuizzesByCategoryId(Long categoryId) {
+        // It's good practice to ensure the category itself exists, though the query might just return empty.
+        // CategoryRepo would be needed for that, or rely on the query.
+        // For now, directly query quizzes by categoryId and published status.
+        List<Quiz> quizzes = quizRepository.findByCategoryIdAndPublishedTrue(categoryId);
+        return quizzes.stream()
+                .map(quizMapper::toDto)
+                .collect(Collectors.toList());
+    }
 } 

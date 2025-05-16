@@ -18,12 +18,9 @@ import {
 import RefreshIcon from '@mui/icons-material/Refresh';
 import AddIcon from '@mui/icons-material/Add';
 
-/**
- * Component that displays all quizzes (both published and unpublished).
- * Uses the useQuizzes hook to separate data fetching from UI rendering.
- */
+
 const AllQuizList = () => {
-  // Use custom hook with onlyPublished=false to get all quizzes
+  
   const { quizzes, loading, error, refetch } = useQuizzes({ onlyPublished: false });
 
   const handleRefresh = () => {

@@ -1,11 +1,18 @@
 FROM openjdk:21-jdk
+
 WORKDIR /opt/app
+
 COPY .mvn/ .mvn
 COPY mvnw pom.xml ./
 RUN chmod +x ./mvnw
 RUN ./mvnw dependency:go-offline
+
 COPY ./src ./src
 RUN ./mvnw clean install -DskipTests
-RUN find ./target -type f -name '*.jar' -exec cp {} /opt/app/app.jar \; -quit
+
+# If you don't want to install find:
+RUN cp target/*.jar app.jar
+
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/opt/app/app.jar" ]
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

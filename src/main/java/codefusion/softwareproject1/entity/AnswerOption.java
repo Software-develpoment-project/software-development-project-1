@@ -1,5 +1,6 @@
 package codefusion.softwareproject1.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -32,15 +33,14 @@ public class AnswerOption {
 
     @ManyToOne
     @JoinColumn(name = "question_id")
+    @JsonBackReference
     private Question question;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
     @LastModifiedDate
     @Column(name = "updated_at")
-    @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 } 

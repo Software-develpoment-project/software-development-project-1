@@ -45,7 +45,7 @@ const QuizList = () => {
     } catch (err) {
       setError('Failed to fetch quizzes. Please try again later.');
       console.error('Error fetching quizzes:', err);
-      setQuizzes([]); // Ensure quizzes is an array in case of error
+      setQuizzes([]);
     } finally {
       setLoading(false);
     }
@@ -109,8 +109,16 @@ const QuizList = () => {
             component={RouterLink} 
             to="/quizzes/new"
             startIcon={<AddIcon />}
+            sx={{ mr: 2 }}
           >
             Create New Quiz
+          </Button>
+          <Button 
+            variant="contained"
+            component={RouterLink} 
+            to="/categories"
+          >
+            See Categories
           </Button>
         </Box>
       </Box>
@@ -143,6 +151,7 @@ const QuizList = () => {
                 <TableCell>Title</TableCell>
                 <TableCell>Description</TableCell>
                 <TableCell>Course Code</TableCell>
+                <TableCell>Category</TableCell>
                 <TableCell align="center">Published</TableCell>
                 <TableCell>Date Added</TableCell>
                 <TableCell align="right">Actions</TableCell>
@@ -154,7 +163,7 @@ const QuizList = () => {
                   key={quiz.id} 
                   hover 
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  onClick={() => navigate(`/quizzes/${quiz.id}`)} // Navigate on row click
+                  onClick={() => navigate(`/quizzes/${quiz.id}`)} 
                   style={{ cursor: 'pointer' }}
                 >
                   <TableCell component="th" scope="row">
@@ -162,6 +171,7 @@ const QuizList = () => {
                   </TableCell>
                   <TableCell>{quiz.description || '-'}</TableCell>
                   <TableCell>{quiz.courseCode || 'N/A'}</TableCell>
+                  <TableCell>{quiz.category?.name || 'N/A'}</TableCell>
                   <TableCell align="center">
                     <Chip 
                       label={quiz.published ? 'Published' : 'Draft'} 
@@ -178,7 +188,7 @@ const QuizList = () => {
                       to={`/quizzes/${quiz.id}/edit`} 
                       color="primary" 
                       size="small"
-                      onClick={(e) => e.stopPropagation()} // Prevent row click
+                      onClick={(e) => e.stopPropagation()} 
                     >
                       <EditIcon />
                     </IconButton>
@@ -186,7 +196,7 @@ const QuizList = () => {
                       color="error" 
                       size="small"
                       onClick={(e) => { 
-                        e.stopPropagation(); // Prevent row click
+                        e.stopPropagation(); 
                         handleDeleteClick(quiz); 
                       }}
                     >

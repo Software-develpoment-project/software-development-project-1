@@ -3,23 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import {
   TextField,
   Button,
-  Container,
   Alert,
   CircularProgress,
-  Paper,
-  Typography,
   Checkbox,
   FormControlLabel,
   Box,
   Stack,
-  Grid
+  Grid,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
 } from '@mui/material';
 import quizService from '../services/quizService';
+import categoryService from '../services/categoryService';
 
-const QuizForm = ({ 
-  quiz = null, 
+const QuizForm = ({
+  quiz = null,
   onSubmit = null,
-  // title prop is now typically handled by the parent page component
   buttonLabel = 'Submit',
   cancelRoute = '/quizzes'
 }) => {
@@ -27,32 +28,55 @@ const QuizForm = ({
     title: '',
     description: '',
     courseCode: '',
-    published: false
+    published: false,
+    categoryId: ''
   });
-  
+
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesError, setCategoriesError] = useState(null);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
-  
+
   const navigate = useNavigate();
-  
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setCategoriesLoading(true);
+        const data = await categoryService.getAllCategories();
+        setCategories(Array.isArray(data) ? data : []);
+        setCategoriesError(null);
+      } catch (err) {
+        setCategoriesError(err.message || 'Failed to load categories.');
+        setCategories([]);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   useEffect(() => {
     if (quiz) {
       setFormData({
         title: quiz.title || '',
         description: quiz.description || '',
         courseCode: quiz.courseCode || '',
-        published: quiz.published || false
+        published: quiz.published || false,
+        categoryId: quiz.category?.id || quiz.categoryId || ''
       });
     }
   }, [quiz]);
-  
+
   const validate = () => {
     const errors = {};
     if (!formData.title.trim()) errors.title = 'Title is required';
     else if (formData.title.length < 3) errors.title = 'Title must be at least 3 characters';
     else if (formData.title.length > 100) errors.title = 'Title must be less than 100 characters';
-    
+
     if (formData.description && formData.description.length > 500) {
       errors.description = 'Description must be less than 500 characters';
     }
@@ -62,26 +86,33 @@ const QuizForm = ({
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
-  
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     const fieldValue = type === 'checkbox' ? checked : value;
+
     setFormData(prev => ({ ...prev, [name]: fieldValue }));
+
     if (validationErrors[name]) {
       setValidationErrors(prev => ({ ...prev, [name]: null }));
     }
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
       let result;
-      const payload = { ...formData }; // Ensure we send the current form data
+      const payload = { ...formData };
+      if (payload.categoryId === '') {
+          payload.categoryId = null;
+      } else {
+          payload.categoryId = Number(payload.categoryId);
+      }
 
       if (onSubmit) {
         result = await onSubmit(payload);
@@ -92,23 +123,21 @@ const QuizForm = ({
           result = await quizService.createQuiz(payload);
         }
       }
-      // Navigate after successful submission
-      // Parent component might handle navigation if onSubmit is provided and returns a specific signal
-      if (!onSubmit || (result && result.id)) { // Basic check, adjust if onSubmit has different success criteria
-         navigate(quiz && quiz.id ? `/quizzes/${quiz.id}` : '/quizzes');
+
+      if (result && result.id) {
+        navigate(cancelRoute || (quiz && quiz.id ? `/quizzes/${quiz.id}` : '/quizzes'));
       }
     } catch (err) {
-      console.error('Quiz form submission error:', err);
-      setError(err.message || 'Failed to save quiz. Please try again.');
+      setError(err.response?.data?.message || err.message || 'Failed to save quiz. Please try again.');
     } finally {
       setLoading(false);
     }
   };
-  
+
   return (
     <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
           {error}
         </Alert>
       )}
@@ -153,16 +182,44 @@ const QuizForm = ({
             fullWidth
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+         <Grid item xs={12} sm={6}>
+          <FormControl fullWidth error={!!validationErrors.categoryId} disabled={categoriesLoading || !!categoriesError}>
+            <InputLabel id="category-select-label">Category</InputLabel>
+            <Select
+              labelId="category-select-label"
+              id="category-select"
+              name="categoryId"
+              value={formData.categoryId || ''}
+              onChange={handleChange}
+              label="Category"
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              {categoriesLoading && <MenuItem value="" disabled><em>Loading categories...</em></MenuItem>}
+              {categoriesError && <MenuItem value="" disabled><em>Error: {categoriesError}</em></MenuItem>}
+              {!categoriesLoading && !categoriesError && categories.length === 0 && (
+                <MenuItem value="" disabled><em>No categories available.</em></MenuItem>
+              )}
+              {!categoriesLoading && !categoriesError && categories.map(category => (
+                <MenuItem key={category.id} value={category.id}>
+                  {category.name}
+                </MenuItem>
+              ))}
+            </Select>
+            {validationErrors.categoryId && <Typography color="error" variant="caption">{validationErrors.categoryId}</Typography>}
+          </FormControl>
+        </Grid>
+        <Grid item xs={12}>
           <FormControlLabel
-            control={<Checkbox 
-                        name="published" 
-                        checked={formData.published} 
-                        onChange={handleChange} 
-                        disabled={loading} 
+            control={<Checkbox
+                        name="published"
+                        checked={formData.published}
+                        onChange={handleChange}
+                        disabled={loading}
                       />}
             label="Published"
-            sx={{ justifyContent: 'flex-start', width: '100%', mt:1 }} // Adjust alignment if needed
+            sx={{ justifyContent: 'flex-start', width: '100%', mt:0 }}
           />
         </Grid>
       </Grid>
@@ -187,4 +244,4 @@ const QuizForm = ({
   );
 };
 
-export default QuizForm; 
+export default QuizForm;

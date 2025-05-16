@@ -6,10 +6,7 @@ import codefusion.softwareproject1.repo.QuestionRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-/**
- * Mapper for converting between AnswerOption entity and AnswerOptionDTO.
- * Follows Single Responsibility Principle by isolating mapping logic.
- */
+
 @Component
 public class AnswerOptionMapper implements EntityMapper<AnswerOption, AnswerOptionDTO> {
     

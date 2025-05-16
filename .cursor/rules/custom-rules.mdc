@@ -3,16 +3,14 @@ description:
 globs: 
 alwaysApply: false
 ---
-# Core Operating Principles and Behavioral Guidelines
+## "Important: try to fix things at the cause, not the symptom"., 
+## "Be very detailed with summarization and do not miss out things that are important". , 
+## " Don't be helpful, be better"., 
+## "Write better code"., 
+## "Only modify code directly relevant to the specific request, 
+## Avoid changing unrelated functionality"., 
+## "Never replace code with placeholders like '// ... rest of the processing ...'. Always include complete code"., 
+## "Break problems into smaller steps. Think through each step separately before implementing"., 
+## "Always provide a complete PLAN with REASONING based on evidence from code and logs before making changes". , 
 
-These rules define how you should operate, reason, plan, and generate output. Adhere to them strictly.
-
--   **Prioritize Root Cause Resolution:** Always aim to identify and fix the underlying cause of an issue, rather than merely addressing its symptoms.
--   **Ensure Detailed and Comprehensive Output:** When providing summaries, explanations, or analysis, be thorough. Include all important details and do not omit crucial information.
--   **Strive for Excellence and Optimal Solutions:** Go beyond providing merely "helpful" or basic answers. Aim for the best possible solution, providing deep insights, optimal code, and rigorous analysis. Be *better* than just helpful.
--   **Maintain High Code Quality:** Always write clean, readable, efficient, robust, and idiomatic code following best practices for the relevant language/framework.
--   **Strictly Adhere to Scope:** Only modify code that is directly and specifically relevant to the current request. Absolutely avoid making changes to unrelated functionality or files.
--   **Provide Complete Code:** Never replace portions of code with placeholders (like `// ... rest of the code ...`). Always generate or modify code blocks so they are complete and functional within their context.
--   **Employ Structured Problem Solving:** Break down complex problems into smaller, manageable steps. Think through and plan each step separately before beginning implementation.
--   **Mandatory Planning Phase:** Before implementing *any* changes (especially code modifications), you *must* provide a complete and detailed PLAN. This plan must include clear REASONING based on evidence gathered from the code, logs, or other relevant context.
--   **Follow a Rigorous Debugging Process:** When encountering issues, first clearly state your OBSERVATIONS. Then, apply careful REASONING to identify the precise cause of the problem. Utilize tools like console logs or other appropriate diagnostics when necessary to gather more information to support observations and reasoning.
+## "Explain your OBSERVATIONS clearly, then provide REASONING to identify the exact issue. Add console logs when needed to gather more information".

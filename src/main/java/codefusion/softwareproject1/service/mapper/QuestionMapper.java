@@ -3,21 +3,25 @@ package codefusion.softwareproject1.service.mapper;
 import codefusion.softwareproject1.entity.Question;
 import codefusion.softwareproject1.repo.QuizRepo;
 import codefusion.softwareproject1.dto.QuestionDTO;
+import codefusion.softwareproject1.dto.AnswerOptionDTO; 
+import codefusion.softwareproject1.entity.AnswerOption;  
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-/**
- * Mapper for converting between Question entity and QuestionDTO.
- * Follows Single Responsibility Principle by isolating mapping logic.
- */
+import java.util.Collections; 
+import java.util.List;      
+import java.util.stream.Collectors; 
+
 @Component
 public class QuestionMapper implements EntityMapper<Question, QuestionDTO> {
     
     private final QuizRepo quizRepository;
-    
+    private final AnswerOptionMapper answerOptionMapper; 
+
     @Autowired
-    public QuestionMapper(QuizRepo quizRepository) {
+    public QuestionMapper(QuizRepo quizRepository, AnswerOptionMapper answerOptionMapper) {
         this.quizRepository = quizRepository;
+        this.answerOptionMapper = answerOptionMapper;
     }
 
     @Override
@@ -28,7 +32,8 @@ public class QuestionMapper implements EntityMapper<Question, QuestionDTO> {
         
         QuestionDTO dto = new QuestionDTO();
         dto.setId(entity.getId());
-        dto.setQuestionText(entity.getQuestionText());
+        dto.setQuestionText(entity.getQuestionText()); 
+        dto.setPoints(entity.getPoints()); 
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());
         
@@ -38,6 +43,16 @@ public class QuestionMapper implements EntityMapper<Question, QuestionDTO> {
         
         if (entity.getQuiz() != null) {
             dto.setQuizId(entity.getQuiz().getId());
+        }
+
+        
+        if (entity.getAnswerOptions() != null && !entity.getAnswerOptions().isEmpty()) {
+            List<AnswerOptionDTO> answerOptionDTOs = entity.getAnswerOptions().stream()
+                    .map(answerOptionMapper::toDto) 
+                    .collect(Collectors.toList());
+            dto.setAnswerOptions(answerOptionDTOs);
+        } else {
+            dto.setAnswerOptions(Collections.emptyList());
         }
         
         return dto;
@@ -50,26 +65,40 @@ public class QuestionMapper implements EntityMapper<Question, QuestionDTO> {
         }
         
         Question entity = new Question();
+       
         entity.setQuestionText(dto.getQuestionText());
+        entity.setPoints(dto.getPoints() != null ? dto.getPoints() : 1); 
         
-        // Set difficulty level if provided
         if (dto.getDifficultyLevel() != null) {
             try {
-                if ("NORMAL".equals(dto.getDifficultyLevel())) {
+                
+                if ("NORMAL".equalsIgnoreCase(dto.getDifficultyLevel())) {
                     entity.setDifficultyLevel(Question.DifficultyLevel.MEDIUM);
                 } else {
-                    entity.setDifficultyLevel(Question.DifficultyLevel.valueOf(dto.getDifficultyLevel()));
+                    entity.setDifficultyLevel(Question.DifficultyLevel.valueOf(dto.getDifficultyLevel().toUpperCase()));
                 }
             } catch (IllegalArgumentException e) {
-                // Default to MEDIUM if the value is not recognized
-                entity.setDifficultyLevel(Question.DifficultyLevel.MEDIUM);
+                entity.setDifficultyLevel(Question.DifficultyLevel.MEDIUM); // Default
             }
+        } else {
+            entity.setDifficultyLevel(Question.DifficultyLevel.MEDIUM); // Default
         }
         
-        // Set quiz if quizId is provided
         if (dto.getQuizId() != null) {
             quizRepository.findById(dto.getQuizId())
                     .ifPresent(entity::setQuiz);
+        }
+
+       
+        if (dto.getAnswerOptions() != null && !dto.getAnswerOptions().isEmpty()) {
+            List<AnswerOption> answerOptions = dto.getAnswerOptions().stream()
+                    .map(answerOptionDTO -> {
+                        AnswerOption ao = answerOptionMapper.toEntity(answerOptionDTO);
+                        ao.setQuestion(entity); 
+                        return ao;
+                    })
+                    .collect(Collectors.toList());
+            entity.setAnswerOptions(answerOptions);
         }
         
         return entity;
@@ -82,22 +111,22 @@ public class QuestionMapper implements EntityMapper<Question, QuestionDTO> {
         }
         
         entity.setQuestionText(dto.getQuestionText());
+        if (dto.getPoints() != null) {
+            entity.setPoints(dto.getPoints());
+        }
         
-        // Update difficulty level if provided
         if (dto.getDifficultyLevel() != null) {
-            try {
-                if ("NORMAL".equals(dto.getDifficultyLevel())) {
+             try {
+                if ("NORMAL".equalsIgnoreCase(dto.getDifficultyLevel())) {
                     entity.setDifficultyLevel(Question.DifficultyLevel.MEDIUM);
                 } else {
-                    entity.setDifficultyLevel(Question.DifficultyLevel.valueOf(dto.getDifficultyLevel()));
+                    entity.setDifficultyLevel(Question.DifficultyLevel.valueOf(dto.getDifficultyLevel().toUpperCase()));
                 }
             } catch (IllegalArgumentException e) {
-                // Default to MEDIUM if the value is not recognized
-                entity.setDifficultyLevel(Question.DifficultyLevel.MEDIUM);
+              
             }
         }
         
-        // Update quiz if quizId has changed
         if (dto.getQuizId() != null && 
                 (entity.getQuiz() == null || !entity.getQuiz().getId().equals(dto.getQuizId()))) {
             quizRepository.findById(dto.getQuizId())
@@ -106,4 +135,4 @@ public class QuestionMapper implements EntityMapper<Question, QuestionDTO> {
         
         return entity;
     }
-} 
+}
