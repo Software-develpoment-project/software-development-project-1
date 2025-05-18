@@ -9,6 +9,7 @@ Development Project
 - [Usage](#usage)
 - [Contributing](#contributing)
 - [Authors](#authors)
+- [FrontEnd](#FrontEnd)
 
 
 ## Introduction
@@ -74,17 +75,102 @@ We welcome contributions! Please follow these steps:
 - Bidhan Adhikari: https://github.com/Bidhan33
 - Tobi: https://github.com/tu-nguyen-do-duc
 - Ahmad Jalal: https://github.com/Jalalians99
->>>>>>> 0c1ef5de7e98252c35357ff9bd03bc9c6e0e221f
+  
+
 
 ## Link to flinga
 https://edu.flinga.fi/s/ECLZ4KQ
 
-<<<<<<< HEAD
+## Link to  Deployment URL 
+ https://software-development-project-1-git-backend-project.2.rahtiapp.fi/api
 
-=======
+
+
+# 📚 Quiz Application Frontend
+
+This repository contains the **frontend part of a Full Stack Quiz Application**, built using **React**, **Vite**, **JavaScript**, and **Redux Toolkit** for efficient state management.
+
+---
+
+## 📌 About the Project
+
+This project is part of a Haaga-Helia assignment to build an interactive quiz application for teachers and students. The application allows teachers to create quizzes and multiple-choice questions, while students can take quizzes, receive instant feedback, and review results.
+
+---
+
+## 🔧 Technologies Used
+
+- ⚛️ React
+- ⚡ Vite (as the build tool)
+- 📦 Redux Toolkit (for state management)
+- 📡 Axios (for API calls)
+- 🎨 CSS / Material UI (for UI design)
+
+---
+
+## 🎯 Features
+
+### 👩‍🏫 Teacher Dashboard:
+- Add, edit, and delete quizzes
+- Add and manage multiple-choice questions per quiz
+- Add answer options and mark correct answers
+- Manage quiz categories
+- Control quiz publishing status
+
+### 🎓 Student Dashboard:
+- View list of published quizzes
+- Take quizzes and get instant feedback per question
+- View quiz result summaries (correct/wrong answer stats)
+- Write, edit, and delete reviews for quizzes
+- Read other students' reviews
+
+---
+
+
+
+## 📅 Redmine Project Management (internal)
+
+The project is organized in **Redmine** with issue categories for:
+- Teacher Dashboard
+- Student Dashboard
+- Redux State Management
+- API Integration
+- UI Design
+- Testing
+
+Trackers used:
+- Feature
+- Bug
+- Task
+
+Version control milestone:
+- `v1.0` — initial working release with core functionalities.
+
+---
+
+## 📦 How to Run
+
+1. Clone the repository  
+   `(https://github.com/Software-develpoment-project/front-end-project.git)`
+
+2. Install dependencies  
+   `npm install`
+
+3. Run the development server  
+   `npm run dev`
+
+
+
+
+## ✨ Acknowledgments
+
+Special thanks to Haaga-Helia teachers and project team members for guidance and feedback.
+
+
+
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
->>>>>>> develop
+
 
 
 
