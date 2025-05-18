@@ -79,7 +79,7 @@ We welcome contributions! Please follow these steps:
 ## Link to flinga
 https://edu.flinga.fi/s/ECLZ4KQ
 
-## Link to URL 
+## Link to  Deployment URL 
  https://software-development-project-1-git-backend-project.2.rahtiapp.fi/api
 
 
