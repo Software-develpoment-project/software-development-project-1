@@ -161,11 +161,6 @@ Version control milestone:
 
 ---
 
-## 📋 License
-
-This project is for educational purposes under Haaga-Helia University of Applied Sciences.
-
----
 
 ## ✨ Acknowledgments
 
