@@ -1,5 +1,32 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link as RouterLink, useNavigate } from 'react-router-dom';
+import {
+  Container,
+  Button,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  CircularProgress,
+  Alert,
+  IconButton,
+  Chip,
+  Box,
+  Grid,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle
+} from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import quizService from '../services/quizService';
 
 const QuizDetail = () => {
@@ -10,20 +37,17 @@ const QuizDetail = () => {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+  const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
+  const [questionToDelete, setQuestionToDelete] = useState(null);
+
   useEffect(() => {
     const fetchQuizData = async () => {
       try {
         setLoading(true);
-        
-        // Fetch quiz details
         const quizData = await quizService.getQuizById(id);
         setQuiz(quizData);
-        
-        // Fetch questions for this quiz
         const questionsData = await quizService.questions.getByQuizId(id);
-        setQuestions(questionsData);
-        
+        setQuestions(Array.isArray(questionsData) ? questionsData : []);
         setError(null);
       } catch (err) {
         setError('Failed to load quiz data. Please try again later.');
@@ -35,117 +59,210 @@ const QuizDetail = () => {
     
     fetchQuizData();
   }, [id]);
-  
-  const handleDeleteQuestion = async (questionId) => {
-    if (window.confirm('Are you sure you want to delete this question?')) {
+
+  const handleDeleteClick = (question) => {
+    setQuestionToDelete(question);
+    setConfirmDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (questionToDelete) {
       try {
-        await quizService.questions.delete(questionId);
-        setQuestions(questions.filter(q => q.id !== questionId));
+        await quizService.questions.delete(questionToDelete.id);
+        setQuestions(prevQuestions => prevQuestions.filter(q => q.id !== questionToDelete.id));
+        setError(null);
       } catch (err) {
         setError('Failed to delete question. Please try again.');
         console.error('Error deleting question:', err);
       }
     }
+    setConfirmDeleteDialogOpen(false);
+    setQuestionToDelete(null);
+  };
+
+  const handleCloseConfirmDialog = () => {
+    setConfirmDeleteDialogOpen(false);
+    setQuestionToDelete(null);
+  };
+  
+  const getDifficultyChipColor = (difficulty) => {
+    switch (difficulty?.toUpperCase()) {
+      case 'EASY':
+        return 'success';
+      case 'MEDIUM':
+        return 'warning';
+      case 'HARD':
+        return 'error';
+      default:
+        return 'default';
+    }
   };
   
   if (loading) {
-    return <div className="flex justify-center items-center h-64"><p>Loading quiz data...</p></div>;
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <CircularProgress />
+        <Typography variant="h6" sx={{ ml: 2 }}>Loading quiz data...</Typography>
+      </Box>
+    );
   }
   
   if (error) {
     return (
-      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-        <p>{error}</p>
-        <button 
-          onClick={() => navigate('/quizzes')} 
-          className="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
-        >
-          Back to Quizzes
-        </button>
-      </div>
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Alert severity="error" action={
+          <Button color="inherit" size="small" onClick={() => navigate('/quizzes')} startIcon={<ArrowBackIcon />}>
+            Back to Quizzes
+          </Button>
+        }>
+          {error}
+        </Alert>
+      </Container>
     );
   }
   
   if (!quiz) {
     return (
-      <div className="p-4">
-        <p>Quiz not found</p>
-        <Link to="/quizzes" className="text-blue-500 hover:text-blue-700">
-          Back to Quizzes
-        </Link>
-      </div>
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Alert severity="warning" action={
+          <Button color="inherit" size="small" component={RouterLink} to="/quizzes" startIcon={<ArrowBackIcon />}>
+            Back to Quizzes
+          </Button>
+        }>
+          Quiz not found.
+        </Alert>
+      </Container>
     );
   }
   
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{quiz.title}</h1>
-        <div className="flex space-x-2">
-          <Link 
-            to="/quizzes" 
-            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-          >
-            Back
-          </Link>
-          <Link 
-            to={`/quizzes/${id}/edit`} 
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Edit Quiz
-          </Link>
-        </div>
-      </div>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Paper elevation={3} sx={{ p: 3, mb: 4}}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            {quiz.title}
+          </Typography>
+          <Box>
+            <Button 
+              component={RouterLink} 
+              to="/quizzes" 
+              variant="outlined" 
+              startIcon={<ArrowBackIcon />} 
+              sx={{ mr: 1 }}
+            >
+              Back to List
+            </Button>
+            <Button 
+              component={RouterLink} 
+              to={`/quizzes/${id}/edit`} 
+              variant="contained" 
+              startIcon={<EditIcon />}
+            >
+              Edit Quiz
+            </Button>
+          </Box>
+        </Box>
+        {quiz.description && (
+          <Typography variant="subtitle1" color="text.secondary" paragraph>
+            {quiz.description}
+          </Typography>
+        )}
+         <Chip 
+            label={quiz.published ? 'Published' : 'Draft'} 
+            color={quiz.published ? 'success' : 'default'} 
+            size="small" 
+            sx={{mb:1}}
+          />
+        <Typography variant="caption" display="block" color="text.secondary">
+            Course Code: {quiz.courseCode || 'N/A'}
+        </Typography>
+        <Typography variant="caption" display="block" color="text.secondary">
+            Created: {quiz.createdAt ? new Date(quiz.createdAt).toLocaleString() : 'N/A'}
+        </Typography>
+      </Paper>
       
-      {quiz.description && (
-        <div className="bg-gray-100 p-4 rounded-lg mb-6">
-          <p className="text-gray-700">{quiz.description}</p>
-        </div>
-      )}
-      
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Questions</h2>
-          <Link 
+      <Paper elevation={3} sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h5" component="h2">
+            Questions
+          </Typography>
+          <Button 
+            component={RouterLink} 
             to={`/quizzes/${id}/questions/new`} 
-            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+            variant="contained" 
+            color="secondary"
+            startIcon={<AddIcon />}
           >
             Add Question
-          </Link>
-        </div>
+          </Button>
+        </Box>
         
         {questions.length === 0 ? (
-          <p className="text-gray-500 italic">No questions yet. Add one to get started!</p>
+          <Typography color="text.secondary" sx={{ fontStyle: 'italic'}}>
+            No questions yet. Add one to get started!
+          </Typography>
         ) : (
-          <div className="space-y-4">
-            {questions.map((question, index) => (
-              <div key={question.id} className="border rounded-lg p-4 shadow-sm">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <span className="font-medium text-gray-500 mr-2">Q{index + 1}.</span>
-                    <span className="font-medium">{question.questionText}</span>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Link 
-                      to={`/questions/${question.id}/answers`}
-                      className="text-blue-500 hover:text-blue-700"
-                    >
-                      Manage Answers
-                    </Link>
-                    <button
-                      onClick={() => handleDeleteQuestion(question.id)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <TableContainer>
+            <Table sx={{ minWidth: 650 }} aria-label="questions table">
+              <TableHead sx={{ backgroundColor: 'grey.100' }}>
+                <TableRow>
+                  <TableCell sx={{ width: '5%' }}>#</TableCell>
+                  <TableCell>Question Text</TableCell>
+                  <TableCell align="center">Difficulty</TableCell>
+                  <TableCell align="right">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {questions.map((question, index) => (
+                  <TableRow key={question.id} hover>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>
+                      <RouterLink to={`/questions/${question.id}/answers`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                        {question.questionText || question.content}
+                      </RouterLink>
+                    </TableCell>
+                    <TableCell align="center">
+                      <Chip 
+                        label={question.difficultyLevel || 'Unknown'} 
+                        color={getDifficultyChipColor(question.difficultyLevel)} 
+                        size="small" 
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      <IconButton 
+                        color="error" 
+                        size="small"
+                        onClick={() => handleDeleteClick(question)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         )}
-      </div>
-    </div>
+      </Paper>
+
+      <Dialog
+        open={confirmDeleteDialogOpen}
+        onClose={handleCloseConfirmDialog}
+      >
+        <DialogTitle>Confirm Delete Question</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete the question: "{questionToDelete?.questionText || questionToDelete?.content}"? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseConfirmDialog}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} color="error" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
 };
 

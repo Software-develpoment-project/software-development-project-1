@@ -1,58 +1,41 @@
 package codefusion.softwareproject1.service.mapper;
 
-import codefusion.softwareproject1.entity.Category;
 import codefusion.softwareproject1.dto.CategoryDTO;
+import codefusion.softwareproject1.entity.Category;
 import org.springframework.stereotype.Component;
 
-/**
- * Mapper for converting between Category entity and CategoryDTO.
- * Follows Single Responsibility Principle by isolating mapping logic.
- */
 @Component
-public class CategoryMapper implements EntityMapper<Category, CategoryDTO> {
+public class CategoryMapper {
 
-    @Override
     public CategoryDTO toDto(Category entity) {
         if (entity == null) {
             return null;
         }
-        
-        CategoryDTO dto = new CategoryDTO();
-        dto.setId(entity.getId());
-        dto.setTitle(entity.getTitle());
-        dto.setDescription(entity.getDescription());
-        
-        return dto;
+        return new CategoryDTO(
+                entity.getId(),
+                entity.getName(),
+                entity.getDescription(),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
+        );
     }
 
-    @Override
     public Category toEntity(CategoryDTO dto) {
         if (dto == null) {
             return null;
         }
-        
         Category entity = new Category();
         entity.setId(dto.getId());
-        entity.setTitle(dto.getTitle());
+        entity.setName(dto.getName());
         entity.setDescription(dto.getDescription());
-        
         return entity;
     }
 
-    @Override
-    public Category updateEntityFromDto(CategoryDTO dto, Category entity) {
+    public void updateEntityFromDto(CategoryDTO dto, Category entity) {
         if (dto == null || entity == null) {
-            return entity;
+            return;
         }
-        
-        if (dto.getTitle() != null) {
-            entity.setTitle(dto.getTitle());
-        }
-        
-        if (dto.getDescription() != null) {
-            entity.setDescription(dto.getDescription());
-        }
-        
-        return entity;
+        entity.setName(dto.getName());
+        entity.setDescription(dto.getDescription());
     }
-}
+} 

@@ -27,7 +27,6 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api")
-@Tag(name = "Published Quizzes", description = "API for accessing published quizzes")
 public class PublishedQuizRestController {
 
     private final QuizService quizService;

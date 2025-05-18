@@ -1,6 +1,6 @@
 package codefusion.softwareproject1.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -44,22 +44,16 @@ public class Question {
     @JoinColumn(name = "quiz_id", nullable = false)
     private Quiz quiz;
     
-    @JsonIgnore
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<AnswerOption> answerOptions;
-    
-    @JsonIgnore
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Feedback> feedbacks;
     
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
     @LastModifiedDate
     @Column(name = "updated_at")
-    @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 
     public void removeAnswerOption(AnswerOption answerOption) {

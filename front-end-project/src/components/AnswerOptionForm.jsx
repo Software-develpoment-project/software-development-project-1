@@ -1,295 +1,290 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Button,
+  Checkbox,
+  TextField,
+  Alert,
+  CircularProgress,
+  Paper,
+  Typography,
+  FormControlLabel,
+  Box,
+  Stack,
+  Grid,
+  IconButton,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import quizService from '../services/quizService';
-
-// Debug: Check if the functions exist in quizService
-console.log('quizService functions available:', {
-  getQuestionAnswers: typeof quizService.getQuestionAnswers === 'function',
-  createAnswerOption: typeof quizService.createAnswerOption === 'function',
-  deleteAnswerOption: typeof quizService.deleteAnswerOption === 'function',
-  answerOptions: quizService.answerOptions,
-  fullQuizService: quizService
-});
 
 const AnswerOptionForm = ({
   questionId,
-  answerOption = null,
-  onSubmit = null,
-  title = 'Manage Answer Options',
-  buttonLabel = 'Add Answer',
+  buttonLabel = 'Add Answer Option',
   cancelRoute = null
 }) => {
-  // Default form state
   const [formData, setFormData] = useState({
     answerText: '',
     correct: false,
     questionId: questionId
   });
-  
+
   const [answerOptions, setAnswerOptions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [listLoading, setListLoading] = useState(true);
   const [error, setError] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
-  const [listLoading, setListLoading] = useState(true);
-  
+  const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
+  const [optionToDelete, setOptionToDelete] = useState(null);
+
   const navigate = useNavigate();
-  
-  const defaultCancelRoute = `/questions/${questionId}`;
-  
-  // Load existing answer options
+
+  const defaultCancelRoute = questionId ? `/quizzes/${questionId}` : '/quizzes';
+
+  const fetchAnswerOptions = async () => {
+    if (!questionId) {
+      setError('Cannot load answers: Question ID is missing.');
+      setListLoading(false);
+      return;
+    }
+    try {
+      setListLoading(true);
+      const data = await quizService.answerOptions.getByQuestionId(questionId);
+      setAnswerOptions(Array.isArray(data) ? data : []);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load existing answer options.');
+      setAnswerOptions([]);
+    } finally {
+      setListLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchAnswerOptions = async () => {
-      try {
-        setListLoading(true);
-        let data;
-        
-        // Try direct function first
-        try {
-          console.log("Attempting to use quizService.getQuestionAnswers");
-          data = await quizService.getQuestionAnswers(questionId);
-        } catch (primaryError) {
-          console.error("Primary function failed:", primaryError);
-          
-          // Fallback to nested function
-          console.log("Attempting to use quizService.answerOptions.getByQuestionId");
-          data = await quizService.answerOptions.getByQuestionId(questionId);
-        }
-        
-        console.log("Answer options data retrieved:", data);
-        setAnswerOptions(data);
-      } catch (err) {
-        console.error('Error fetching answer options:', err);
-        setError('Failed to load existing answer options.');
-      } finally {
-        setListLoading(false);
-      }
-    };
-    
     fetchAnswerOptions();
   }, [questionId]);
-  
-  // Prefill form if editing an answer option
-  useEffect(() => {
-    if (answerOption) {
-      setFormData({
-        answerText: answerOption.text || '',
-        correct: answerOption.correct || false,
-        questionId
-      });
-    }
-  }, [answerOption, questionId]);
-  
+
   const validate = () => {
     const errors = {};
-    
-    if (!formData.answerText.trim()) {
-      errors.answerText = 'Answer answerText is required';
-    } else if (formData.answerText.length < 1) {
-      errors.answerText = 'Answer answerText must not be empty';
-    } else if (formData.answerText.length > 255) {
-      errors.answerText = 'Answer text must be less than 255 characters';
+    if (!formData.answerText.trim()) errors.answerText = 'Answer text is required';
+    else if (formData.answerText.length > 500) errors.answerText = 'Answer text must be less than 500 characters';
+
+    if (answerOptions.length >= 4) {
+       errors.general = 'Maximum 4 answer options allowed per question.';
+       setError('Maximum 4 answer options allowed per question.');
     }
-    
-    // Check if we're already at the maximum of 4 answers
-    if (answerOptions.length >= 4 && !answerOption) {
-      errors.general = 'Maximum 4 answer options allowed per question';
-    }
-    
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
-  
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
-    
-    // Clear validation error when user types
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     if (validationErrors[name]) {
-      setValidationErrors(prev => ({
-        ...prev,
-        [name]: null
-      }));
+      setValidationErrors(prev => ({ ...prev, [name]: null }));
     }
+    if (error && name === 'answerText') setError(null);
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate form
-    if (!validate()) {
-      return;
-    }
-    
-    setLoading(true);
     setError(null);
-    
+    if (!validate()) return;
+
+    setLoading(true);
+
+    const payload = {
+      answerText: formData.answerText,
+      correct: formData.correct,
+      questionId: formData.questionId
+    };
+
     try {
-      // Create new answer option
-      let result;
-      
-      // Try direct function first
-      console.log("Attempting to use quizService.createAnswerOption");
-      
-      result = await quizService.createAnswerOption(questionId, formData);
-      
-      console.log("Answer option created:", result);
-      
-      // Add to list
-      setAnswerOptions([...answerOptions, result]);
-      
-      // Reset form
-      setFormData({
-        answerText: '',
-        correct: false,
-        questionId
-      });
-      
-      return result;
+      const newOption = await quizService.answerOptions.create(questionId, payload);
+      setAnswerOptions(prevOptions => [...prevOptions, newOption]);
+      setFormData({ answerText: '', correct: false, questionId });
+      setValidationErrors({});
     } catch (err) {
-      setError('Failed to save answer option. Please try again.');
-      console.error('Error saving answer option:', err);
+      setError(err.message || 'Failed to save answer option. Please try again.');
     } finally {
       setLoading(false);
     }
   };
-  
-  const handleDeleteAnswerOption = async (id) => {
-    if (window.confirm('Are you sure you want to delete this answer option?')) {
+
+  const handleDeleteClick = (option) => {
+    setOptionToDelete(option);
+    setConfirmDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (optionToDelete) {
       try {
-        // Try direct function first
-        try {
-          console.log("Attempting to use quizService.deleteAnswerOption");
-          await quizService.deleteAnswerOption(id);
-        } catch (primaryError) {
-          console.error("Primary function failed:", primaryError);
-          
-          // Fallback to nested function
-          console.log("Attempting to use quizService.answerOptions.delete");
-          await quizService.answerOptions.delete(id);
-        }
-        
-        console.log("Answer option deleted:", id);
-        setAnswerOptions(answerOptions.filter(option => option.id !== id));
+        await quizService.answerOptions.delete(optionToDelete.id);
+        setAnswerOptions(prevOptions => prevOptions.filter(opt => opt.id !== optionToDelete.id));
+        setError(null);
       } catch (err) {
-        setError('Failed to delete answer option. Please try again.');
-        console.error('Error deleting answer option:', err);
+         setError(err.message || 'Failed to delete answer option. Please try again.');
       }
     }
+    setConfirmDeleteDialogOpen(false);
+    setOptionToDelete(null);
   };
-  
+
+  const handleCloseConfirmDialog = () => {
+    setConfirmDeleteDialogOpen(false);
+    setOptionToDelete(null);
+  };
+
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">{title}</h1>
-      
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          <p>{error}</p>
-        </div>
-      )}
-      
-      {validationErrors.general && (
-        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
-          <p>{validationErrors.general}</p>
-        </div>
-      )}
-      
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-4">Current Answer Options</h2>
-        
-        {listLoading ? (
-          <p>Loading answer options...</p>
-        ) : answerOptions.length === 0 ? (
-          <p className="text-gray-500 italic">No answer options yet. Add one below.</p>
-        ) : (
-          <div className="space-y-3">
-            {answerOptions.map(option => (
-              <div 
-                key={option.id} 
-                className={`border rounded-lg p-3 flex justify-between items-center ${
-                  option.correct ? 'bg-green-50 border-green-200' : 'bg-white'
-                }`}
-              >
-                <div className="flex items-center">
-                  <span className={`inline-block w-4 h-4 rounded-full mr-3 ${
-                    option.correct ? 'bg-green-500' : 'bg-gray-300'
-                  }`}></span>
-                  <span>{option.text}</span>
-                </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => handleDeleteAnswerOption(option.id)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-      
-      <div className="border-t pt-6">
-        <h2 className="text-lg font-semibold mb-4">Add New Answer Option</h2>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="text" className="block text-sm font-medium text-gray-700 mb-1">
-              Answer Text <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="text"
-              name="text"
-              value={formData.text}
-              onChange={handleChange}
-              className={`w-full p-2 border rounded ${validationErrors.text ? 'border-red-500' : 'border-gray-300'}`}
-              disabled={loading || answerOptions.length >= 4}
-              required
-            />
-            {validationErrors.text && (
-              <p className="mt-1 text-sm text-red-500">{validationErrors.text}</p>
-            )}
-          </div>
-          
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="correct"
-              name="correct"
-              checked={formData.correct}
-              onChange={handleChange}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              disabled={loading || answerOptions.length >= 4}
-            />
-            <label htmlFor="correct" className="ml-2 block text-sm text-gray-700">
-              This is the correct answer
-            </label>
-          </div>
-          
-          <div className="flex justify-between pt-4">
-            <button
-              type="button"
+    <Box sx={{ mt: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h5" component="h2">
+                Current Answer Options
+            </Typography>
+            <Button
+              variant="outlined"
+              startIcon={<ArrowBackIcon />}
               onClick={() => navigate(cancelRoute || defaultCancelRoute)}
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
             >
-              Back
-            </button>
-            <button
-              type="submit"
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-              disabled={loading || answerOptions.length >= 4}
-            >
-              {loading ? 'Saving...' : buttonLabel}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+              Back to Quiz Detail
+            </Button>
+        </Box>
+
+      {listLoading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+          <CircularProgress />
+        </Box>
+      ) : answerOptions.length === 0 && !error ? (
+        <Typography color="text.secondary" sx={{ fontStyle: 'italic', mb: 2 }}>
+            No answer options yet. Add one using the form below.
+        </Typography>
+      ) : (
+        <TableContainer component={Paper} elevation={1} sx={{ mb: 4 }}>
+          <Table size="small">
+            <TableHead sx={{ backgroundColor: 'grey.100' }}>
+              <TableRow>
+                <TableCell>Answer Text</TableCell>
+                <TableCell align="center">Is Correct?</TableCell>
+                <TableCell align="right">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {answerOptions.map(option => (
+                <TableRow key={option.id} hover>
+                  <TableCell sx={{ wordBreak: 'break-word' }}>{option.answerText}</TableCell>
+                  <TableCell align="center">
+                    <Chip
+                      label={option.correct ? 'Correct' : 'Incorrect'}
+                      color={option.correct ? 'success' : 'error'}
+                      size="small"
+                      variant="outlined"
+                    />
+                  </TableCell>
+                  <TableCell align="right">
+                    <IconButton
+                        size="small"
+                        onClick={() => handleDeleteClick(option)}
+                        aria-label="delete answer option"
+                        color="error"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+
+      <Paper component="form" onSubmit={handleSubmit} elevation={1} sx={{ p: 2 }}>
+          <Typography variant="h6" component="h3" gutterBottom>
+              Add New Answer Option
+          </Typography>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+              {error}
+            </Alert>
+          )}
+          {validationErrors.general && (
+            <Alert severity="warning" sx={{ mb: 2 }} onClose={() => setValidationErrors(prev => ({ ...prev, general: null}))}>
+              {validationErrors.general}
+            </Alert>
+          )}
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={8}>
+                <TextField
+                    name="answerText"
+                    label="Answer Text"
+                    value={formData.answerText}
+                    onChange={handleChange}
+                    error={!!validationErrors.answerText}
+                    helperText={validationErrors.answerText}
+                    disabled={loading || answerOptions.length >= 4}
+                    required
+                    fullWidth
+                    size="small"
+                />
+            </Grid>
+            <Grid item xs={12} sm={2}>
+                <FormControlLabel
+                    control={<Checkbox
+                                name="correct"
+                                checked={formData.correct}
+                                onChange={handleChange}
+                                disabled={loading || answerOptions.length >= 4}
+                             />}
+                    label="Correct"
+                    sx={{ justifyContent: 'flex-start'}}
+                />
+            </Grid>
+            <Grid item xs={12} sm={2}>
+              <Button
+                variant="contained"
+                type="submit"
+                disabled={loading || answerOptions.length >= 4}
+                startIcon={loading ? <CircularProgress size={20} /> : <AddIcon />}
+                fullWidth
+              >
+                {loading ? 'Adding...' : buttonLabel}
+              </Button>
+            </Grid>
+          </Grid>
+        </Paper>
+
+      <Dialog
+        open={confirmDeleteDialogOpen}
+        onClose={handleCloseConfirmDialog}
+      >
+        <DialogTitle>Confirm Delete Answer Option</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete the answer: "{optionToDelete?.answerText}"? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseConfirmDialog}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} color="error" autoFocus>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 };
 
-export default AnswerOptionForm; 
+export default AnswerOptionForm;

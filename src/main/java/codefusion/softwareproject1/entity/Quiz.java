@@ -4,11 +4,16 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -24,70 +29,35 @@ public class Quiz {
     
     @Column(nullable = false)
     private String title;
-    
-    @Column(length = 1000)
+
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
     
     @Column(nullable = false)
     private boolean published = false;
 
-    public enum Difficulty {
-        EASY, MEDIUM, HARD
-    }
+    @Column(name = "course_code", length = 50)
+    private String courseCode;
 
     
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-    
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-    
-    @Column
-    private Difficulty difficulty;
-    
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "quiz_categories",
-        joinColumns = @JoinColumn(name = "quiz_id"),
-        inverseJoinColumns = @JoinColumn(name = "category_id")
-    )
-    private List<Category> categories = new ArrayList<>();
-    
+
+    @JsonIgnore
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Question> questions = new ArrayList<>();
+    private List<Question> questions;
 
     @ManyToOne
     @JoinColumn(name = "teacher_id")
     private Teacher teacher;
-    
-    // Add version field for optimistic locking
-   
-    
-    // Helper methods to maintain bidirectional relationships
-    public void addQuestion(Question question) {
-        questions.add(question);
-        question.setQuiz(this);
-    }
-    
-    public void removeQuestion(Question question) {
-        questions.remove(question);
-        question.setQuiz(null);
-    }
-    
-    public void addCategory(Category category) {
-        categories.add(category);
-        category.getQuizzes().add(this);
-    }
-    
-    public void removeCategory(Category category) {
-        categories.remove(category);
-        category.getQuizzes().remove(this);
-    }
-    public void addCategoryId(Long categoryId) {
-        Category category = new Category();
-        category.setId(categoryId);
-        this.categories.add(category);
-    }
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

@@ -1,151 +1,167 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  TextField,
+  Button,
+  Alert,
+  CircularProgress,
+  Typography,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  Box,
+  Stack,
+  Grid
+} from '@mui/material';
 import quizService from '../services/quizService';
 
 const QuestionForm = ({
   quizId,
   question = null,
   onSubmit = null,
-  title = 'Add Question',
   buttonLabel = 'Save Question',
   cancelRoute = null
 }) => {
-  // Default form state
   const [formData, setFormData] = useState({
     content: question?.content || '',
-    quizId: quizId || question?.quizId
+    quizId: quizId || question?.quizId || '',
+    difficultyLevel: question?.difficultyLevel || 'MEDIUM'
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
-  
+
   const navigate = useNavigate();
-  
-  const defaultCancelRoute = `/quizzes/${quizId}`;
-  
+
+  const defaultCancelRoute = quizId ? `/quizzes/${quizId}` : '/quizzes';
+
+  useEffect(() => {
+    if (question) {
+      setFormData({
+        content: question.content || '',
+        quizId: question.quizId || quizId || '',
+        difficultyLevel: question.difficultyLevel || 'MEDIUM',
+      });
+    }
+  }, [question, quizId]);
+
   const validate = () => {
     const errors = {};
-    
-    if (!formData.content.trim()) {
-      errors.content = 'Question text is required';
-    } else if (formData.content.length < 5) {
-      errors.content = 'Question text must be at least 5 characters';
-    } else if (formData.content.length > 500) {
-      errors.content = 'Question text must be less than 500 characters';
-    }
-    
+    if (!formData.content.trim()) errors.content = 'Question text is required';
+    else if (formData.content.length < 5) errors.content = 'Question text must be at least 5 characters';
+    else if (formData.content.length > 1000) errors.content = 'Question text must be less than 1000 characters';
+
+    if (!formData.quizId) errors.quizId = 'Quiz ID is missing. Cannot save question.';
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
-  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    
-    // Clear validation error when user types
+    setFormData(prev => ({ ...prev, [name]: value }));
     if (validationErrors[name]) {
-      setValidationErrors(prev => ({
-        ...prev,
-        [name]: null
-      }));
+      setValidationErrors(prev => ({ ...prev, [name]: null }));
     }
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate form
-    if (!validate()) {
-      return;
-    }
-    
+    if (!validate()) return;
+
     setLoading(true);
     setError(null);
-    
+
+    const payload = {
+        questionText: formData.content,
+        difficultyLevel: formData.difficultyLevel,
+        quizId: formData.quizId
+    };
+
     try {
       let result;
-      
       if (onSubmit) {
-        // Use provided onSubmit handler
-        result = await onSubmit(formData);
+        result = await onSubmit(payload);
       } else {
-        // Use default behavior
         if (question && question.id) {
-          // Edit existing question (not implemented in API yet)
-          throw new Error('Editing questions is not supported yet');
+          throw new Error('Editing questions via this form is not fully supported yet.');
         } else {
-          // Create new question
-          result = await quizService.questions.create(formData.quizId, formData);
+          result = await quizService.questions.create(formData.quizId, payload);
         }
       }
-      
-      // Reset form and navigate back
-      setFormData({ content: '', quizId: formData.quizId });
       navigate(cancelRoute || defaultCancelRoute);
-      
-      return result;
     } catch (err) {
-      setError('Failed to save question. Please try again.');
-      console.error('Error saving question:', err);
+      setError(err.message || 'Failed to save question. Please try again.');
     } finally {
       setLoading(false);
     }
   };
-  
+
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">{title}</h1>
-      
+    <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          <p>{error}</p>
-        </div>
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
       )}
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">
-            Question Text <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            id="content"
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <TextField
             name="content"
+            label="Question Text"
+            multiline
+            rows={4}
             value={formData.content}
             onChange={handleChange}
-            rows="4"
-            className={`w-full p-2 border rounded ${validationErrors.content ? 'border-red-500' : 'border-gray-300'}`}
+            error={!!validationErrors.content}
+            helperText={validationErrors.content}
             disabled={loading}
             required
+            fullWidth
+            autoFocus
           />
-          {validationErrors.content && (
-            <p className="mt-1 text-sm text-red-500">{validationErrors.content}</p>
-          )}
-        </div>
-        
-        <div className="flex justify-end space-x-3 pt-4">
-          <button
-            type="button"
-            onClick={() => navigate(cancelRoute || defaultCancelRoute)}
-            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-            disabled={loading}
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            disabled={loading}
-          >
-            {loading ? 'Saving...' : buttonLabel}
-          </button>
-        </div>
-      </form>
-    </div>
+        </Grid>
+        <Grid item xs={12}>
+          <FormControl component="fieldset" disabled={loading} error={!!validationErrors.difficultyLevel} fullWidth>
+            <FormLabel component="legend">Difficulty Level</FormLabel>
+            <RadioGroup
+              row
+              aria-label="difficulty level"
+              name="difficultyLevel"
+              value={formData.difficultyLevel}
+              onChange={handleChange}
+            >
+              <FormControlLabel value="EASY" control={<Radio />} label="Easy" />
+              <FormControlLabel value="MEDIUM" control={<Radio />} label="Medium" />
+              <FormControlLabel value="HARD" control={<Radio />} label="Hard" />
+            </RadioGroup>
+            {validationErrors.difficultyLevel && <Typography color="error" variant="caption">{validationErrors.difficultyLevel}</Typography>}
+          </FormControl>
+        </Grid>
+      </Grid>
+
+      <Stack direction="row" spacing={2} sx={{ mt: 3, justifyContent: 'flex-end' }}>
+        <Button
+          variant="outlined"
+          onClick={() => navigate(cancelRoute || defaultCancelRoute)}
+          disabled={loading}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          type="submit"
+          disabled={loading || !formData.quizId}
+          startIcon={loading ? <CircularProgress size={20} /> : null}
+        >
+          {loading ? 'Saving...' : buttonLabel}
+        </Button>
+      </Stack>
+    </Box>
   );
 };
 
-export default QuestionForm; 
+export default QuestionForm;

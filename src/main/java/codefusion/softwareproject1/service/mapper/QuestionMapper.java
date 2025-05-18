@@ -1,83 +1,138 @@
 package codefusion.softwareproject1.service.mapper;
 
-import codefusion.softwareproject1.dto.QuestionDTO;
 import codefusion.softwareproject1.entity.Question;
+import codefusion.softwareproject1.repo.QuizRepo;
+import codefusion.softwareproject1.dto.QuestionDTO;
+import codefusion.softwareproject1.dto.AnswerOptionDTO; 
+import codefusion.softwareproject1.entity.AnswerOption;  
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-@Component
-public class QuestionMapper {
+import java.util.Collections; 
+import java.util.List;      
+import java.util.stream.Collectors; 
 
-    private final AnswerOptionMapper answerOptionMapper;
+@Component
+public class QuestionMapper implements EntityMapper<Question, QuestionDTO> {
+    
+    private final QuizRepo quizRepository;
+    private final AnswerOptionMapper answerOptionMapper; 
 
     @Autowired
-    public QuestionMapper(AnswerOptionMapper answerOptionMapper) {
+    public QuestionMapper(QuizRepo quizRepository, AnswerOptionMapper answerOptionMapper) {
+        this.quizRepository = quizRepository;
         this.answerOptionMapper = answerOptionMapper;
     }
 
-    /**
-     * Convert entity to DTO
-     */
-    public QuestionDTO toDto(Question question) {
-        if (question == null) {
+    @Override
+    public QuestionDTO toDto(Question entity) {
+        if (entity == null) {
             return null;
         }
-
-        QuestionDTO dto = new QuestionDTO();
-        dto.setId(question.getId());
-        dto.setText(question.getQuestionText());
-        dto.setPoints(question.getPoints());
-        dto.setDifficultyLevel(question.getDifficultyLevel());
-        dto.setCreatedAt(question.getCreatedAt());
-        dto.setUpdatedAt(question.getUpdatedAt());
         
-        if (question.getQuiz() != null) {
-            dto.setQuizId(question.getQuiz().getId());
+        QuestionDTO dto = new QuestionDTO();
+        dto.setId(entity.getId());
+        dto.setQuestionText(entity.getQuestionText()); 
+        dto.setPoints(entity.getPoints()); 
+        dto.setCreatedAt(entity.getCreatedAt());
+        dto.setUpdatedAt(entity.getUpdatedAt());
+        
+        if (entity.getDifficultyLevel() != null) {
+            dto.setDifficultyLevel(entity.getDifficultyLevel().name());
         }
         
-        if (question.getAnswerOptions() != null) {
-            dto.setAnswerOptions(
-                question.getAnswerOptions().stream()
-                    .map(answerOptionMapper::toDto)
-                    .toList()
-            );
+        if (entity.getQuiz() != null) {
+            dto.setQuizId(entity.getQuiz().getId());
+        }
+
+        
+        if (entity.getAnswerOptions() != null && !entity.getAnswerOptions().isEmpty()) {
+            List<AnswerOptionDTO> answerOptionDTOs = entity.getAnswerOptions().stream()
+                    .map(answerOptionMapper::toDto) 
+                    .collect(Collectors.toList());
+            dto.setAnswerOptions(answerOptionDTOs);
+        } else {
+            dto.setAnswerOptions(Collections.emptyList());
         }
         
         return dto;
     }
 
-    /**
-     * Convert DTO to entity
-     */
+    @Override
     public Question toEntity(QuestionDTO dto) {
         if (dto == null) {
             return null;
         }
-
-        Question question = new Question();
-        updateEntityFromDto(dto, question);
-        return question;
-    }
-
-    /**
-     * Update entity from DTO
-     */
-    public void updateEntityFromDto(QuestionDTO dto, Question question) {
-        if (dto == null || question == null) {
-            return;
+        
+        Question entity = new Question();
+       
+        entity.setQuestionText(dto.getQuestionText());
+        entity.setPoints(dto.getPoints() != null ? dto.getPoints() : 1); 
+        
+        if (dto.getDifficultyLevel() != null) {
+            try {
+                
+                if ("NORMAL".equalsIgnoreCase(dto.getDifficultyLevel())) {
+                    entity.setDifficultyLevel(Question.DifficultyLevel.MEDIUM);
+                } else {
+                    entity.setDifficultyLevel(Question.DifficultyLevel.valueOf(dto.getDifficultyLevel().toUpperCase()));
+                }
+            } catch (IllegalArgumentException e) {
+                entity.setDifficultyLevel(Question.DifficultyLevel.MEDIUM); // Default
+            }
+        } else {
+            entity.setDifficultyLevel(Question.DifficultyLevel.MEDIUM); // Default
+        }
+        
+        if (dto.getQuizId() != null) {
+            quizRepository.findById(dto.getQuizId())
+                    .ifPresent(entity::setQuiz);
         }
 
-        question.setQuestionText(dto.getText());
+       
+        if (dto.getAnswerOptions() != null && !dto.getAnswerOptions().isEmpty()) {
+            List<AnswerOption> answerOptions = dto.getAnswerOptions().stream()
+                    .map(answerOptionDTO -> {
+                        AnswerOption ao = answerOptionMapper.toEntity(answerOptionDTO);
+                        ao.setQuestion(entity); 
+                        return ao;
+                    })
+                    .collect(Collectors.toList());
+            entity.setAnswerOptions(answerOptions);
+        }
         
+        return entity;
+    }
+
+    @Override
+    public Question updateEntityFromDto(QuestionDTO dto, Question entity) {
+        if (dto == null || entity == null) {
+            return entity;
+        }
+        
+        entity.setQuestionText(dto.getQuestionText());
         if (dto.getPoints() != null) {
-            question.setPoints(dto.getPoints());
+            entity.setPoints(dto.getPoints());
         }
         
         if (dto.getDifficultyLevel() != null) {
-            question.setDifficultyLevel(dto.getDifficultyLevel());
+             try {
+                if ("NORMAL".equalsIgnoreCase(dto.getDifficultyLevel())) {
+                    entity.setDifficultyLevel(Question.DifficultyLevel.MEDIUM);
+                } else {
+                    entity.setDifficultyLevel(Question.DifficultyLevel.valueOf(dto.getDifficultyLevel().toUpperCase()));
+                }
+            } catch (IllegalArgumentException e) {
+              
+            }
         }
         
-        // Note: Quiz relation is handled by the service layer
-        // Note: Answer options are handled separately
+        if (dto.getQuizId() != null && 
+                (entity.getQuiz() == null || !entity.getQuiz().getId().equals(dto.getQuizId()))) {
+            quizRepository.findById(dto.getQuizId())
+                    .ifPresent(entity::setQuiz);
+        }
+        
+        return entity;
     }
 }

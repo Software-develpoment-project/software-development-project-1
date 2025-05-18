@@ -1,71 +1,65 @@
 package codefusion.softwareproject1.service.mapper;
 
 import codefusion.softwareproject1.entity.Quiz;
-import codefusion.softwareproject1.repo.CategoryRepo;
 import codefusion.softwareproject1.entity.Category;
-import codefusion.softwareproject1.entity.Question;
 import codefusion.softwareproject1.dto.QuizDTO;
 import codefusion.softwareproject1.dto.CategoryDTO;
-import codefusion.softwareproject1.dto.QuestionDTO;
+import codefusion.softwareproject1.dto.QuestionDTO; 
+import codefusion.softwareproject1.repo.CategoryRepo;
+import codefusion.softwareproject1.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.stream.Collectors;
-import java.util.List;
+import java.util.Collections; 
+import java.util.List;      
+import java.util.stream.Collectors; 
 
-/**
- * Mapper for converting between Quiz entity and QuizDTO.
- * Follows Single Responsibility Principle by isolating mapping logic.
- * Enhanced with null checks and defensive copying to prevent errors.
- */
 @Component
 public class QuizMapper implements EntityMapper<Quiz, QuizDTO> {
 
+    private final CategoryRepo categoryRepository;
+    private final CategoryMapper categoryMapper;
+    private final QuestionMapper questionMapper; 
+
     @Autowired
-    private CategoryMapper categoryMapper;
- 
-    @Autowired
-    private QuestionMapper questionMapper;
+    public QuizMapper(CategoryRepo categoryRepository, CategoryMapper categoryMapper, QuestionMapper questionMapper) {
+        this.categoryRepository = categoryRepository;
+        this.categoryMapper = categoryMapper;
+        this.questionMapper = questionMapper; 
+    }
 
     @Override
     public QuizDTO toDto(Quiz entity) {
         if (entity == null) {
             return null;
         }
-        
+
         QuizDTO dto = new QuizDTO();
         dto.setId(entity.getId());
         dto.setTitle(entity.getTitle());
         dto.setDescription(entity.getDescription());
+        dto.setCourseCode(entity.getCourseCode());
         dto.setPublished(entity.isPublished());
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());
-        dto.setDifficulty(entity.getDifficulty());
-       
-        
-        // Handle categories safely
-        if (entity.getCategories() != null && !entity.getCategories().isEmpty()) {
-            // Set category IDs
-            List<Long> categoryIds = entity.getCategories().stream()
-                .map(Category::getId)
-                .collect(Collectors.toList());
-            dto.setCategoryIds(categoryIds);
+
+        if (entity.getCategory() != null) {
+            dto.setCategoryId(entity.getCategory().getId());
+            dto.setCategory(categoryMapper.toDto(entity.getCategory()));
         } else {
-            dto.setCategoryIds(new ArrayList<>());
+            dto.setCategory(null);
         }
-    
-        // Map questions safely
+
+        
         if (entity.getQuestions() != null && !entity.getQuestions().isEmpty()) {
-            dto.setQuestion(entity.getQuestions().stream()
-                .map(question -> questionMapper.toDto(question))
-                .filter(qDto -> qDto != null) // Filter out nulls
-                .collect(Collectors.toList()));
+            List<QuestionDTO> questionDTOs = entity.getQuestions().stream()
+                    .map(questionMapper::toDto) 
+                    .collect(Collectors.toList());
+            dto.setQuestions(questionDTOs);
         } else {
-            dto.setQuestion(new ArrayList<>());
+            dto.setQuestions(Collections.emptyList());
         }
-        
+
         return dto;
     }
 
@@ -74,104 +68,55 @@ public class QuizMapper implements EntityMapper<Quiz, QuizDTO> {
         if (dto == null) {
             return null;
         }
-        
+
         Quiz entity = new Quiz();
-        entity.setId(dto.getId());
+        if (dto.getId() != null) {
+            entity.setId(dto.getId());
+        }
         entity.setTitle(dto.getTitle());
         entity.setDescription(dto.getDescription());
+        entity.setCourseCode(dto.getCourseCode());
         entity.setPublished(dto.isPublished());
-        entity.setDifficulty(dto.getDifficulty());
-        
-        // Initialize collections to prevent null pointer exceptions
-       entity.setCategories(new ArrayList<>());
-        entity.setQuestions(new ArrayList<>());
-       
-        
-        // Map categories if provided
-        if (dto.getCategoryIds() != null && !dto.getCategoryIds().isEmpty()) {
-            List<Category> categories = dto.getCategoryIds().stream()
-                .map(categoryId -> {
-                    Category category = new Category();
-                    category.setId(categoryId);
-                    return category;
-                })
-                .filter(cat -> cat != null) // Filter out nulls
-                .collect(Collectors.toList());
-            entity.setCategories(categories);
-        } else {
-            entity.setCategories(Collections.emptyList());
-        }
 
-        // Map questions if provided
-        if (dto.getQuestion() != null && !dto.getQuestion().isEmpty()) {
-            List<Question> questions = dto.getQuestion().stream()
-                .map(questionMapper::toEntity)
-                .filter(q -> q != null) // Filter out nulls
-                .collect(Collectors.toList());
-            entity.setQuestions(questions);
-        } 
-        
+        if (dto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(dto.getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category", "id", dto.getCategoryId()));
+            entity.setCategory(category);
+        }
         return entity;
     }
 
     @Override
     public Quiz updateEntityFromDto(QuizDTO dto, Quiz entity) {
+       
         if (dto == null || entity == null) {
             return entity;
         }
-        
+
         if (dto.getTitle() != null) {
             entity.setTitle(dto.getTitle());
         }
-        
         if (dto.getDescription() != null) {
             entity.setDescription(dto.getDescription());
+        } else if (dto.getDescription() == null && entity.getDescription() != null) {
+            entity.setDescription(null);
         }
-        
-        // Explicitly check for boolean field changes
+        if (dto.getCourseCode() != null) {
+            entity.setCourseCode(dto.getCourseCode());
+        } else if (dto.getCourseCode() == null && entity.getCourseCode() != null) {
+            entity.setCourseCode(null);
+        }
         entity.setPublished(dto.isPublished());
-        
-        if (dto.getDifficulty() != null) {
-            entity.setDifficulty(dto.getDifficulty());
-        }
-        
-        // Handle category updates carefully
-        if (dto.getCategoryIds() != null && !dto.getCategoryIds().isEmpty()) {
-            // We leave this empty here as it's safer to handle category relationships
-            // in the service layer with proper transaction management
-        }
 
-        // Update questions if provided
-        if (dto.getQuestion() != null) {
-            // Clear existing questions to avoid duplication or stale data
-            entity.getQuestions().clear();
-            
-            if (!dto.getQuestion().isEmpty()) {
-                List<Question> questions = dto.getQuestion().stream()
-                    .map(questionMapper::toEntity)
-                    .filter(q -> q != null)
-                    .collect(Collectors.toList());
-                
-                // Set the quiz reference on each question
-                questions.forEach(question -> question.setQuiz(entity));
-                
-                entity.setQuestions(questions);
+        if (dto.getCategoryId() != null) {
+            if (entity.getCategory() == null || !entity.getCategory().getId().equals(dto.getCategoryId())) {
+                Category category = categoryRepository.findById(dto.getCategoryId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Category", "id", dto.getCategoryId()));
+                entity.setCategory(category);
             }
-        }
-        if( dto.getCategoryIds() != null && !dto.getCategoryIds().isEmpty()){
-            List<Category> categories = dto.getCategoryIds().stream()
-                .map(categoryId -> {
-                    Category category = new Category();
-                    category.setId(categoryId);
-                    return category;
-                })
-                .filter(cat -> cat != null) // Filter out nulls
-                .collect(Collectors.toList());
-            entity.setCategories(categories);
         } else {
-            entity.setCategories(Collections.emptyList());
+            entity.setCategory(null);
         }
-        
         return entity;
     }
 }

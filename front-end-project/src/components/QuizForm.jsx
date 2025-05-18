@@ -1,206 +1,247 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  TextField,
+  Button,
+  Alert,
+  CircularProgress,
+  Checkbox,
+  FormControlLabel,
+  Box,
+  Stack,
+  Grid,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
+} from '@mui/material';
 import quizService from '../services/quizService';
-import { testDirectQuizCreation } from '../services/debug';
+import categoryService from '../services/categoryService';
 
-const QuizForm = ({ 
-  quiz = null, 
+const QuizForm = ({
+  quiz = null,
   onSubmit = null,
-  title = 'Quiz Form',
   buttonLabel = 'Submit',
   cancelRoute = '/quizzes'
 }) => {
-  // Default empty form state
   const [formData, setFormData] = useState({
     title: '',
-    description: ''
+    description: '',
+    courseCode: '',
+    published: false,
+    categoryId: ''
   });
-  
+
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesError, setCategoriesError] = useState(null);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
-  
+
   const navigate = useNavigate();
-  
-  // If quiz is provided, prefill the form (used in edit mode)
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setCategoriesLoading(true);
+        const data = await categoryService.getAllCategories();
+        setCategories(Array.isArray(data) ? data : []);
+        setCategoriesError(null);
+      } catch (err) {
+        setCategoriesError(err.message || 'Failed to load categories.');
+        setCategories([]);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   useEffect(() => {
     if (quiz) {
       setFormData({
         title: quiz.title || '',
-        description: quiz.description || ''
+        description: quiz.description || '',
+        courseCode: quiz.courseCode || '',
+        published: quiz.published || false,
+        categoryId: quiz.category?.id || quiz.categoryId || ''
       });
     }
   }, [quiz]);
-  
+
   const validate = () => {
     const errors = {};
-    
-    if (!formData.title.trim()) {
-      errors.title = 'Title is required';
-    } else if (formData.title.length < 3) {
-      errors.title = 'Title must be at least 3 characters';
-    } else if (formData.title.length > 100) {
-      errors.title = 'Title must be less than 100 characters';
-    }
-    
+    if (!formData.title.trim()) errors.title = 'Title is required';
+    else if (formData.title.length < 3) errors.title = 'Title must be at least 3 characters';
+    else if (formData.title.length > 100) errors.title = 'Title must be less than 100 characters';
+
     if (formData.description && formData.description.length > 500) {
       errors.description = 'Description must be less than 500 characters';
     }
-    
+    if (formData.courseCode && formData.courseCode.length > 50) {
+      errors.courseCode = 'Course code must be less than 50 characters';
+    }
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
-  
+
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    
-    // Clear validation error when user types
+    const { name, value, type, checked } = e.target;
+    const fieldValue = type === 'checkbox' ? checked : value;
+
+    setFormData(prev => ({ ...prev, [name]: fieldValue }));
+
     if (validationErrors[name]) {
-      setValidationErrors(prev => ({
-        ...prev,
-        [name]: null
-      }));
+      setValidationErrors(prev => ({ ...prev, [name]: null }));
     }
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate form
-    if (!validate()) {
-      return;
-    }
-    
+    if (!validate()) return;
+
     setLoading(true);
     setError(null);
-    
+
     try {
-      // Log the form data right before submission
-      console.log('QuizForm - Data being submitted:', JSON.stringify(formData));
-      
       let result;
-      
-      if (onSubmit) {
-        // If an onSubmit handler is provided, use it
-        result = await onSubmit(formData);
+      const payload = { ...formData };
+      if (payload.categoryId === '') {
+          payload.categoryId = null;
       } else {
-        // Otherwise use default submit behavior
-        if (quiz) {
-          // Update mode
-          result = await quizService.updateQuiz(quiz.id, formData);
+          payload.categoryId = Number(payload.categoryId);
+      }
+
+      if (onSubmit) {
+        result = await onSubmit(payload);
+      } else {
+        if (quiz && quiz.id) {
+          result = await quizService.updateQuiz(quiz.id, payload);
         } else {
-          // Create mode
-          result = await quizService.createQuiz(formData);
+          result = await quizService.createQuiz(payload);
         }
       }
-      
-      // Reset form
-      setFormData({ title: '', description: '' });
-      
-      // Navigate back to quiz list
-      navigate('/quizzes');
-      
-      return result;
+
+      if (result && result.id) {
+        navigate(cancelRoute || (quiz && quiz.id ? `/quizzes/${quiz.id}` : '/quizzes'));
+      }
     } catch (err) {
-      setError('Failed to save quiz. Please try again.');
-      console.error('Error saving quiz:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to save quiz. Please try again.');
     } finally {
       setLoading(false);
     }
   };
-  
-  // Debug function to test direct API call
-  const handleTestDirectCall = async () => {
-    try {
-      await testDirectQuizCreation();
-      alert('Direct API call succeeded! Check console for details.');
-    } catch (err) {
-      alert('Direct API call failed! Check console for details.');
-    }
-  };
-  
+
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">{title}</h1>
-      
+    <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          <p>{error}</p>
-        </div>
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
       )}
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-            Title <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="title"
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <TextField
             name="title"
+            label="Title"
             value={formData.title}
             onChange={handleChange}
-            className={`w-full p-2 border rounded ${validationErrors.title ? 'border-red-500' : 'border-gray-300'}`}
+            error={!!validationErrors.title}
+            helperText={validationErrors.title}
             disabled={loading}
             required
+            fullWidth
+            autoFocus
           />
-          {validationErrors.title && (
-            <p className="mt-1 text-sm text-red-500">{validationErrors.title}</p>
-          )}
-        </div>
-        
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
-          <textarea
-            id="description"
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
             name="description"
+            label="Description"
+            multiline
+            rows={4}
             value={formData.description}
             onChange={handleChange}
-            rows="4"
-            className={`w-full p-2 border rounded ${validationErrors.description ? 'border-red-500' : 'border-gray-300'}`}
+            error={!!validationErrors.description}
+            helperText={validationErrors.description}
             disabled={loading}
+            fullWidth
           />
-          {validationErrors.description && (
-            <p className="mt-1 text-sm text-red-500">{validationErrors.description}</p>
-          )}
-        </div>
-        
-        <div className="flex justify-end space-x-3 pt-4">
-          <button
-            type="button"
-            onClick={() => navigate(cancelRoute)}
-            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            name="courseCode"
+            label="Course Code"
+            value={formData.courseCode}
+            onChange={handleChange}
+            error={!!validationErrors.courseCode}
+            helperText={validationErrors.courseCode}
             disabled={loading}
-          >
-            Cancel
-          </button>
-          {process.env.NODE_ENV === 'development' && (
-            <button
-              type="button"
-              onClick={handleTestDirectCall}
-              className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded"
-              disabled={loading}
+            fullWidth
+          />
+        </Grid>
+         <Grid item xs={12} sm={6}>
+          <FormControl fullWidth error={!!validationErrors.categoryId} disabled={categoriesLoading || !!categoriesError}>
+            <InputLabel id="category-select-label">Category</InputLabel>
+            <Select
+              labelId="category-select-label"
+              id="category-select"
+              name="categoryId"
+              value={formData.categoryId || ''}
+              onChange={handleChange}
+              label="Category"
             >
-              Test Direct API
-            </button>
-          )}
-          <button
-            type="submit"
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            disabled={loading}
-          >
-            {loading ? 'Saving...' : buttonLabel}
-          </button>
-        </div>
-      </form>
-    </div>
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              {categoriesLoading && <MenuItem value="" disabled><em>Loading categories...</em></MenuItem>}
+              {categoriesError && <MenuItem value="" disabled><em>Error: {categoriesError}</em></MenuItem>}
+              {!categoriesLoading && !categoriesError && categories.length === 0 && (
+                <MenuItem value="" disabled><em>No categories available.</em></MenuItem>
+              )}
+              {!categoriesLoading && !categoriesError && categories.map(category => (
+                <MenuItem key={category.id} value={category.id}>
+                  {category.name}
+                </MenuItem>
+              ))}
+            </Select>
+            {validationErrors.categoryId && <Typography color="error" variant="caption">{validationErrors.categoryId}</Typography>}
+          </FormControl>
+        </Grid>
+        <Grid item xs={12}>
+          <FormControlLabel
+            control={<Checkbox
+                        name="published"
+                        checked={formData.published}
+                        onChange={handleChange}
+                        disabled={loading}
+                      />}
+            label="Published"
+            sx={{ justifyContent: 'flex-start', width: '100%', mt:0 }}
+          />
+        </Grid>
+      </Grid>
+      <Stack direction="row" spacing={2} sx={{ mt: 3, justifyContent: 'flex-end' }}>
+        <Button
+          variant="outlined"
+          onClick={() => navigate(cancelRoute)}
+          disabled={loading}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          type="submit"
+          disabled={loading}
+          startIcon={loading ? <CircularProgress size={20} /> : null}
+        >
+          {loading ? 'Saving...' : buttonLabel}
+        </Button>
+      </Stack>
+    </Box>
   );
 };
 
-export default QuizForm; 
+export default QuizForm;

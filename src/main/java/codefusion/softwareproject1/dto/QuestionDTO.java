@@ -1,25 +1,44 @@
 package codefusion.softwareproject1.dto;
 
-import codefusion.softwareproject1.entity.Question.DifficultyLevel;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.util.Date;
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class QuestionDTO {
     private Long id;
-    private String text;
-    private Integer points;
-    private DifficultyLevel difficultyLevel;
+
+    @NotBlank(message = "Question text is required")
+    @Size(min = 5, max = 500, message = "Question text must be between 5 and 500 characters")
+    private String questionText;
+
+    @NotNull(message = "Quiz ID is required")
     private Long quizId;
+
+    private String difficultyLevel;
+    private Integer points;
+
+    private List<AnswerOptionDTO> answerOptions;
+
     private Date createdAt;
     private Date updatedAt;
-    private List<AnswerOptionDTO> answerOptions;
+
+    // Constructor to initialize all fields 
+    public QuestionDTO(Long id, String questionText, Long quizId, String difficultyLevel, Integer points, Date createdAt, Date updatedAt, List<AnswerOptionDTO> answerOptions) {
+        this.id = id;
+        this.questionText = questionText;
+        this.quizId = quizId;
+        this.difficultyLevel = difficultyLevel;
+        this.points = points;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.answerOptions = answerOptions;
+    }
 }

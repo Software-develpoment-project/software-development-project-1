@@ -79,7 +79,12 @@ We welcome contributions! Please follow these steps:
 ## Link to flinga
 https://edu.flinga.fi/s/ECLZ4KQ
 
+<<<<<<< HEAD
 
+=======
+## License
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+>>>>>>> develop
 
 
 
