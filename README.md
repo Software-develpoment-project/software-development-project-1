@@ -75,7 +75,8 @@ We welcome contributions! Please follow these steps:
 - Bidhan Adhikari: https://github.com/Bidhan33
 - Tobi: https://github.com/tu-nguyen-do-duc
 - Ahmad Jalal: https://github.com/Jalalians99
->>>>>>> 0c1ef5de7e98252c35357ff9bd03bc9c6e0e221f
+  
+
 
 ## Link to flinga
 https://edu.flinga.fi/s/ECLZ4KQ
