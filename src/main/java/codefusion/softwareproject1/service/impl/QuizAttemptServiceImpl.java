@@ -93,7 +93,7 @@ public class QuizAttemptServiceImpl implements QuizAttemptService {
         studentAnswer.setAttempt(attempt);
         studentAnswer.setQuestion(question);
         studentAnswer.setChosenAnswer(chosenAnswer);
-        studentAnswer.setCorrect(chosenAnswer.isCorrect());
+        studentAnswer.setCorrect(chosenAnswer.getIsCorrect());
 
         return studentAnswerRepo.save(studentAnswer);
     }

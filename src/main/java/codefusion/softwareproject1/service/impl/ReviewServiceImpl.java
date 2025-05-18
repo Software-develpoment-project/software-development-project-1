@@ -97,9 +97,7 @@ public class ReviewServiceImpl implements ReviewService {
         Review review = reviewRepository.findById(reviewId) // Call to repository
                 .orElseThrow(() -> new ResourceNotFoundException("Review", "id", reviewId));
 
-        if (studentNickname == null || !review.getStudentNickname().equalsIgnoreCase(studentNickname)) {
-            throw new UnauthorizedActionException("You can only edit your own reviews.");
-        }
+        
         if (review.getQuiz() != null && !review.getQuiz().isPublished()){
             throw new UnauthorizedActionException("Cannot edit a review for a quiz that is no longer published.");
         }
@@ -115,9 +113,7 @@ public class ReviewServiceImpl implements ReviewService {
         Review review = reviewRepository.findById(reviewId) // Call to repository
                 .orElseThrow(() -> new ResourceNotFoundException("Review", "id", reviewId));
         
-        if (studentNickname == null || !review.getStudentNickname().equalsIgnoreCase(studentNickname)) {
-             throw new UnauthorizedActionException("You can only delete your own reviews.");
-        }
+        
         reviewRepository.delete(review); // Call to repository
     }
 }

@@ -31,7 +31,7 @@ public class StudentAnswerMapper implements EntityMapper<StudentAnswer, StudentA
 
         if (entity.getChosenAnswer() != null) {
             dto.setChosenAnswerId(entity.getChosenAnswer().getId());
-            dto.setChosenAnswerText(entity.getChosenAnswer().getAnswerText()); 
+            dto.setChosenAnswerText(entity.getChosenAnswer().getText()); 
         }
 
         return dto;
