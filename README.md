@@ -159,7 +159,7 @@ Version control milestone:
 3. Run the development server  
    `npm run dev`
 
----
+
 
 
 ## ✨ Acknowledgments
@@ -167,9 +167,7 @@ Version control milestone:
 Special thanks to Haaga-Helia teachers and project team members for guidance and feedback.
 
 
-<<<<<<< HEAD
 
-=======
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
